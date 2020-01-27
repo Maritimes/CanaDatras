@@ -94,7 +94,7 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
       tmp_HL <- HL_Mar(scratch_env = tmp_env)
       tmp_HL<-merge(tmp_HH[,c("mission","RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT","GEAREXP","DOORTYPE","STNO","HAULNO","YEAR")],
                     tmp_HL, all.y = T, by.x=c("mission", "STNO"), by.y=c("MISSION","SETNO"))
-
+      tmp_HL$RECORDTYPE <- "HL"
       tmp_CA <- "not yet implemented"
       tmp_HH$mission <-tmp_HL$mission<-NULL
       if(csv){
