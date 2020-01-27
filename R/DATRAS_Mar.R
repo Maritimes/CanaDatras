@@ -43,6 +43,7 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
                        fn.oracle.dsn = "_none_",
                        usepkg = "rodbc",
                        data.dir = NULL){
+  season <- toupper(season)
   timestamp<-format(Sys.time(), "%Y%m%d_%H%M")
   Sys.setenv(TZ = "America/Halifax")
   scratch_env = new.env()
