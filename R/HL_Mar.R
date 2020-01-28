@@ -16,7 +16,7 @@ HL_Mar <- function(scratch_env = NULL){
   #   123,141,142,143,160,200,201,202,203,204,216,220,221,240,241,300,304,320,350,400,409,410,411,
   #   412,413,414,501,502,610,622,623,630,637,640,647,701,704,2550
   cat("\n","Generating HL... ")
-
+ 
   aggByLenSexGroups <- function(df = NULL){
     # generate appropriate length group
     df$LNGTCLASS<- ceiling(df$FLEN/df$LNGTCODE) * df$LNGTCODE
@@ -184,7 +184,6 @@ HL_Mar <- function(scratch_env = NULL){
   forAgg$SPECVAL <- ifelse(forAgg$TOTALNO <= 0 & forAgg$TOTWGT >0 , 6, ifelse(forAgg$LNGTCLASS == -9, 7,  1))
   forAgg <- merge(forAgg, SPP)
   forAgg$TOTWGT<-forAgg$SPEC<-NULL
-
   forAgg[is.na(forAgg)]<- -9 #catch all to turn all NAs to -9
   cat("Done")
   return(forAgg)

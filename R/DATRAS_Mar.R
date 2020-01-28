@@ -48,6 +48,24 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
   Sys.setenv(TZ = "America/Halifax")
   scratch_env = new.env()
   results<-list()
+  ord_HH <- c("RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
+              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR",
+              "MONTH","DAY","TIMESHOT","STRATUM","HAULDUR","DAYNIGHT",
+              "SHOOTLAT","SHOOTLONG","HAULLAT","HAULLONG","STATREC","DEPTH",
+              "HAULVAL","HYDROSTNO","STDSPECRECCODE","BYCSPECRECCODE","DATATYPE",
+              "NETOPENING","RIGGING","TICKLER","DISTANCE","WARPLNGT","WARPDIA",
+              "WARPDEN","DOORSURFACE","DOORWGT","DOORSPREAD","WINGSPREAD",
+              "BUOYANCY","KITEDIM","WGTGROUNDROPE","TOWDIR","GROUNDSPEED",
+              "SPEEDWATER","SURCURDIR","SURCURSPEED","BOTCURDIR","BOTCURSPEED",
+              "WINDDIR","WINDSPEED","SWELLDIR","SWELLHEIGHT","SURTEMP","BOTTEMP",
+              "SURSAL","BOTSAL","THERMOCLINE","THCLINEDEPTH","CODENDMESH",
+              "SECCHIDEPTH","TURBIDITY","TIDEPHASE","TIDESPEED","PELSAMPTYPE",
+              "MINTRAWLDEPTH","MAXTRAWLDEPTH")
+  ord_HL <- c("RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
+              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR",
+              "SPECCODETYPE", "SPECCODE","SPECVAL","SEX","TOTALNO",
+              "CATIDENTIFIER","NOMEAS","SUBFACTOR","SUBWGT","CATCATCHWGT",
+              "LNGTCODE","LNGTCLASS","HLNOATLNGT","DEVSTAGE","LENMEASTYPE")
   cat("\n", "Extracting Data")
   Mar.datawrangling::get_data_custom(schema="GROUNDFISH",
                                      fn.oracle.username = fn.oracle.username,
@@ -96,10 +114,17 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
                     tmp_HL, all.y = T, by.x=c("mission", "STNO"), by.y=c("MISSION","SETNO"))
       tmp_HL$RECORDTYPE <- "HL"
       tmp_CA <- "not yet implemented"
+      browser()
+      #reorder data
+      ord_HH<-ord_HH[ord_HH %in% names(tmp_HH)]
+      ord_HL<-ord_HL[ord_HL %in% names(tmp_HL)]
+      tmp_HH<-tmp_HH[,ord_HH]
+      tmp_HL<-tmp_HL[,ord_HL]
       tmp_HH$mission <-tmp_HL$mission<-NULL
       if(csv){
-        utils::write.csv(tmp_HH, paste0("HH_",fullnm), row.names = F)
-        utils::write.csv(tmp_HL, paste0("HL_",fullnm), row.names = F)
+        theFile <- file.create(fullnm)
+        utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = FALSE)
+        utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = FALSE, append = T)
       }
       thisyr <- list(HH = tmp_HH, HL = tmp_HL, CA = tmp_CA)
       results[[nm]]<-thisyr
