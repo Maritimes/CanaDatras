@@ -16,7 +16,6 @@ HL_Mar <- function(scratch_env = NULL){
   #   123,141,142,143,160,200,201,202,203,204,216,220,221,240,241,300,304,320,350,400,409,410,411,
   #   412,413,414,501,502,610,622,623,630,637,640,647,701,704,2550
   cat("\n","Generating HL... ")
- 
   aggByLenSexGroups <- function(df = NULL){
     # generate appropriate length group
     df$LNGTCLASS<- ceiling(df$FLEN/df$LNGTCODE) * df$LNGTCODE
@@ -69,6 +68,12 @@ HL_Mar <- function(scratch_env = NULL){
   #   tmp_HL[is.na(tmp_HL$SPECCODE),"SPECCODE"]<--9
 
   #tmp_HL <- addSpCodes()
+  handleGSINF<-function(){
+    df<-scratch_env$GSINF
+    df <- df[,c("MISSION","SETNO", "STRAT")]
+    colnames(df)[colnames(df)=="STRAT"] <- "AREACODE"
+    return(df)
+  }
   handleGSCAT<-function(){
     df<-scratch_env$GSCAT
     doSubFact <- function(df = NULL){
@@ -117,8 +122,7 @@ HL_Mar <- function(scratch_env = NULL){
           df[df$SPEC == 60 & (substr(df$MISSION, 4,7) >2015 & (!df$MISSION %in% c("TEL2016002","TEL2016003"))),"FLEN"]/10
       return(df)
     }
-
-    df<-scratch_env$GSDET[,names(scratch_env$GSDET) %in% c("MISSION", "SETNO", "SPEC", "FMAT", "FLEN", "CLEN","FWT", "FSEX", "SIZE_CLASS")]
+    df<-scratch_env$GSDET[,names(scratch_env$GSDET) %in% c("MISSION", "SETNO", "SPEC", "FMAT", "FLEN", "CLEN","FWT", "FSEX", "SIZE_CLASS", "SPECIMEN_ID")]
     colnames(df)[colnames(df)=="SIZE_CLASS"] <- "CATIDENTIFIER"
     df <- addSexCodes(df)
     # df <- addDevStage(df)
@@ -145,13 +149,13 @@ HL_Mar <- function(scratch_env = NULL){
     #get all of the species - the CODE, APHIAID, LGRP
     SPP <- sort(unique(c(unique(scratch_env$GSCAT$SPEC), unique(scratch_env$GSDET$SPEC))))
     SPP <- data.frame(SPEC = SPP)
-    GSSPECIES_CODES <- scratch_env$GSSPECIES_CODES[scratch_env$GSSPECIES_CODES$CODE %in% SPP$SPEC,c("CODE","APHIAID")]
-    colnames(GSSPECIES_CODES)[colnames(GSSPECIES_CODES)=="APHIAID"] <- "SPECCODE"
-    GSSPECIES_CODES$SPECCODETYPE <- -9
-    GSSPECIES_CODES[!is.na(GSSPECIES_CODES$SPECCODE),"SPECCODETYPE"]<- "W"
+    # GSSPECIES_CODES <- scratch_env$GSSPECIES_CODES[scratch_env$GSSPECIES_CODES$CODE %in% SPP$SPEC,c("CODE","APHIAID")]
+    # colnames(GSSPECIES_CODES)[colnames(GSSPECIES_CODES)=="APHIAID"] <- "SPECCODE"
+    # GSSPECIES_CODES$SPECCODETYPE <- -9
+    # GSSPECIES_CODES[!is.na(GSSPECIES_CODES$SPECCODE),"SPECCODETYPE"]<- "W"
     GSSPEC <- scratch_env$GSSPEC[scratch_env$GSSPEC$SPEC %in% SPP$SPEC,c("SPEC", "LGRP")]
     colnames(GSSPEC)[colnames(GSSPEC)=="LGRP"] <- "LNGTCODE"
-    SPP <- merge(SPP, GSSPECIES_CODES, all.x = T, by.x= "SPEC", by.y="CODE")
+   
     SPP <- merge(SPP, GSSPEC, all.x = T)
     SPP <- addLenMeasType(SPP)
   }
@@ -170,21 +174,23 @@ HL_Mar <- function(scratch_env = NULL){
   }
   GSDET <- handleGSDET()
   GSCAT <- handleGSCAT()
+  GSINF <- handleGSINF()
   SPP <- handleSpecies()
   #subfactor - maybe this needs to be determined first?
   forAgg <- merge(SPP[,c("SPEC", "LNGTCODE")], GSDET[,c("SPEC", "MISSION","SETNO", "FLEN", "FWT", "SEX","CATIDENTIFIER")], by = "SPEC", all.y = T )
-  forAgg <- aggByLenSexGroups(forAgg)
-  forAgg <- forAgg[,c("SPEC", "MISSION","SETNO","SEX","LNGTCLASS","CATIDENTIFIER","HLNOATLNGT", "CATCATCHWGT")]
-  forAgg$DEVSTAGE <- -9 #devstage (i.e. maturity) not used at a haul-level (i.e. GSCAT)
+  tmp_HL <- aggByLenSexGroups(forAgg)
+  tmp_HL <- tmp_HL[,c("SPEC", "MISSION","SETNO","SEX","LNGTCLASS","CATIDENTIFIER","HLNOATLNGT", "CATCATCHWGT")]
+  tmp_HL$DEVSTAGE <- -9 #devstage (i.e. maturity) not used at a haul-level (i.e. GSCAT)
 
-  forAgg = merge(forAgg, GSCAT, all.x = T)
-  noMeas <- getNoMeas(forAgg[,c("SPEC", "MISSION", "SETNO", "SEX", "HLNOATLNGT", "CATIDENTIFIER")])
-  forAgg = merge(forAgg, noMeas)
-  forAgg$SPECVAL <- NA
-  forAgg$SPECVAL <- ifelse(forAgg$TOTALNO <= 0 & forAgg$TOTWGT >0 , 6, ifelse(forAgg$LNGTCLASS == -9, 7,  1))
-  forAgg <- merge(forAgg, SPP)
-  forAgg$TOTWGT<-forAgg$SPEC<-NULL
-  forAgg[is.na(forAgg)]<- -9 #catch all to turn all NAs to -9
+  tmp_HL = merge(tmp_HL, GSCAT, all.x = T)
+  noMeas <- getNoMeas(tmp_HL[,c("SPEC", "MISSION", "SETNO", "SEX", "HLNOATLNGT", "CATIDENTIFIER")])
+  tmp_HL = merge(tmp_HL, noMeas)
+  tmp_HL$SPECVAL <- NA
+  tmp_HL$SPECVAL <- ifelse(tmp_HL$TOTALNO <= 0 & tmp_HL$TOTWGT >0 , 6, ifelse(tmp_HL$LNGTCLASS == -9, 7,  1))
+  tmp_HL <- merge(tmp_HL, SPP)
+  tmp_HL <- merge(tmp_HL, GSINF)
+  tmp_HL$TOTWGT<-NULL
+  tmp_HL[is.na(tmp_HL)]<- -9 #catch all to turn all NAs to -9
   cat("Done")
-  return(forAgg)
+  return(tmp_HL)
 }

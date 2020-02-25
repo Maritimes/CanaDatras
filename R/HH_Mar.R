@@ -233,13 +233,8 @@ HH_Mar <- function(scratch_env = NULL){
     return(df)
   }
   addICESStrata<-function(df=NULL){
-    df$DEPTHSTRATUM<-NA
-    df[df$STRATUM %in% c(442,443,447,448,455,456,458,463,464,473,474,475,480,490,493,494,495),"DEPTHSTRATUM"]<- "CAN1"
-    df[df$STRATUM %in% c(441,444,449,450,454,457,460,462,465,470,472,476,477,481,485,491,492),"DEPTHSTRATUM"]<- "CAN2"
-    df[df$STRATUM %in% c(440,445,446,451,452,453,461,466,471,478,482,483,484),"DEPTHSTRATUM"]<- "CAN3"
-    df[df$STRATUM %in% c(459),"DEPTHSTRATUM"]<- "CAN4"
-    df[is.na(df$DEPTHSTRATUM),"DEPTHSTRATUM"]<--9
-    df$STRATUM<-NULL
+    # decided we could use our own strata rather than the CAN1-4 DEPTHSTRATA
+    colnames(df)[colnames(df)=="STRATUM"] <- "DEPTHSTRATUM"
     return(df)
   }
   addICESFields<-function(df=NULL){

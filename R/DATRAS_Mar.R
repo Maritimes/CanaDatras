@@ -66,6 +66,12 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
               "SPECCODETYPE", "SPECCODE","SPECVAL","SEX","TOTALNO",
               "CATIDENTIFIER","NOMEAS","SUBFACTOR","SUBWGT","CATCATCHWGT",
               "LNGTCODE","LNGTCLASS","HLNOATLNGT","DEVSTAGE","LENMEASTYPE")
+  ord_CA <- c("RECORDTYPE", "QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
+              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR",
+              "SPECCODETYPE","SPECCODE",
+              "AREATYPE","AREACODE","LNGTCODE","LNGTCLASS","SEX","MATURITY","PLUSGR",
+              "AGERINGS","CANOATLNGT","INDWGT","MATURITYSCALE","FISHID","GENSAMP",
+              "STOMSAMP","AGESOURCE","AGEPREPMET","OTGRADING","PARSAMP")
   cat("\n", "Extracting Data")
   Mar.datawrangling::get_data_custom(schema="GROUNDFISH",
                                      fn.oracle.username = fn.oracle.username,
@@ -73,7 +79,7 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
                                      fn.oracle.dsn = fn.oracle.dsn,
                                      data.dir = data.dir,
                                      usepkg = usepkg,
-                                     tables = c("GSWARPOUT","GSSPEC","GSSPECIES_CODES"),
+                                     tables = c("GSWARPOUT","GSSPEC","GSSPECIES_CODES","GS_LV1_OBSERVATIONS"),
                                      env = scratch_env, quiet = T)
   getRaw<-function(yr=NULL, season=NULL,
                    fn.oracle.username = fn.oracle.username,
@@ -113,18 +119,35 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
       tmp_HL<-merge(tmp_HH[,c("mission","RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT","GEAREXP","DOORTYPE","STNO","HAULNO","YEAR")],
                     tmp_HL, all.y = T, by.x=c("mission", "STNO"), by.y=c("MISSION","SETNO"))
       tmp_HL$RECORDTYPE <- "HL"
-      tmp_CA <- "not yet implemented"
-      browser()
-      #reorder data
+      
+      tmp_CA <- CA_Mar(scratch_env = tmp_env, HL = tmp_HL)
+      tmp_CA <- merge(unique(tmp_CA), unique(tmp_HH[,c("mission", "STNO","DEPTHSTRATUM")]), all.x=T)
+      colnames(tmp_CA)[colnames(tmp_CA)=="DEPTHSTRATUM"] <- "AREACODE"
+      tmp_CA[is.na(tmp_CA)]<- -9
+
+       SPP <- sort(unique(c(unique(scratch_env$GSCAT$SPEC), unique(scratch_env$GSDET$SPEC))))
+       SPP <- data.frame(SPEC = SPP)
+       GSSPECIES_CODES <- scratch_env$GSSPECIES_CODES[scratch_env$GSSPECIES_CODES$CODE %in% SPP$SPEC,c("CODE","APHIAID")]
+       colnames(GSSPECIES_CODES)[colnames(GSSPECIES_CODES)=="APHIAID"] <- "SPECCODE"
+       GSSPECIES_CODES$SPECCODETYPE <- -9
+       GSSPECIES_CODES[!is.na(GSSPECIES_CODES$SPECCODE),"SPECCODETYPE"]<- "W"
+       
+       tmp_HL <- merge(tmp_HL, GSSPECIES_CODES, all.x=T, by.x= "SPEC", by.y="CODE")
+       tmp_CA <- merge(tmp_CA, GSSPECIES_CODES, all.x=T, by.x= "SPEC", by.y="CODE")
+       
       ord_HH<-ord_HH[ord_HH %in% names(tmp_HH)]
       ord_HL<-ord_HL[ord_HL %in% names(tmp_HL)]
+      ord_CA<-ord_CA[ord_CA %in% names(tmp_CA)]
       tmp_HH<-tmp_HH[,ord_HH]
       tmp_HL<-tmp_HL[,ord_HL]
-      tmp_HH$mission <-tmp_HL$mission<-NULL
+      tmp_CA<-tmp_CA[,ord_CA]
+      
       if(csv){
         theFile <- file.create(fullnm)
-        utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = FALSE)
-        utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = FALSE, append = T)
+        utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE)
+        utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, append = T) 
+        utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, append = T)
+
       }
       thisyr <- list(HH = tmp_HH, HL = tmp_HL, CA = tmp_CA)
       results[[nm]]<-thisyr
