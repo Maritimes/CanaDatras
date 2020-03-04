@@ -3,7 +3,7 @@ Type: Package
 Title: Facilitates converting Canadian Trawl Survey Data into DATRAS format
 Version: 2020.01.27
 Authors@R: c(
-    person("Dan", "Ricard", email = "Daniel.Ricard@dfo-mpo.gc.ca", role = "cre"),
+    person("Daniel", "Ricard", email = "Daniel.Ricard@dfo-mpo.gc.ca", role = "cre"),
     person("Mike", "McMahon", email = "mike.mcmahon@dfo-mpo.gc.ca", role = "aut"))
 Maintainer: Mike McMahon <mike.mcmahon@dfo-mpo.gc.ca>
 Description: This package converts Canadian Trawl Survey data into ICES DATRAS form (i.e. HH and HL files).
