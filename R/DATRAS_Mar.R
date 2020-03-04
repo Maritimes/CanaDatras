@@ -144,9 +144,9 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
       
       if(csv){
         theFile <- file.create(fullnm)
-        utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE)
-        utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, append = T) 
-        utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, append = T)
+        utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, sep = ",")
+        utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, sep = ",", append = T) 
+        utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, sep = ",", append = T)
 
       }
       thisyr <- list(HH = tmp_HH, HL = tmp_HL, CA = tmp_CA)

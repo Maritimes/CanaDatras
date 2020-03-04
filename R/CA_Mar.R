@@ -156,7 +156,7 @@ GSspecimens <- handleSpecimens()
 GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$GENSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "GENSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
 GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$STOMSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "STOMSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
 GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$PARSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "PARSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
-GSDET$AREATYPE <- "CanadaMaritimes"
+GSDET$AREATYPE <- 27
 colnames(GSDET)[colnames(GSDET)=="FWT"] <- "INDWGT"
 colnames(GSDET)[colnames(GSDET)=="SIZE_CLASS"] <- "CATIDENTIFIER"
 # df$AreaCode <- theMarStrata
