@@ -53,17 +53,21 @@ makeDATRAS<-function(region = NULL, yr=NULL, season = NULL, csv=T,
                  fn.oracle.dsn = "_none_",
                  usepkg = "rodbc",
                  data.dir = NULL){
+region <- toupper(region)
+good <- c("NFLD", "MAR", "GULF","QUE", "CEN", "PAC")
+if (!region %in% good)stop("Please provide a valid region")
+
 switch(region,
        "NFLD" = DATRAS_NFLD(yr=yr, season=season,  csv=csv),
-       "Mar" = DATRAS_Mar(yr=yr, season=season,  csv=csv,
+       "MAR" = DATRAS_Mar(yr=yr, season=season,  csv=csv,
                             fn.oracle.username = fn.oracle.username,
                             fn.oracle.password = fn.oracle.password,
                             fn.oracle.dsn = fn.oracle.dsn,
                             data.dir = data.dir,
                             usepkg = usepkg),
-       "Gulf" = DATRAS_Gulf(yr=yr, season=season,  csv=csv),
-       "Quebec" = DATRAS_Que(yr=yr, season=season,  csv=csv),
-       "Cen" = DATRAS_Cen(yr=yr, season=season,  csv=csv),
-       "Pac" = DATRAS_Pac(yr=yr, season=season,  csv=csv)
+       "GULF" = DATRAS_Gulf(yr=yr, season=season,  csv=csv),
+       "QUE" = DATRAS_Que(yr=yr, season=season,  csv=csv),
+       "CEN" = DATRAS_Cen(yr=yr, season=season,  csv=csv),
+       "PAC" = DATRAS_Pac(yr=yr, season=season,  csv=csv)
        )
 }

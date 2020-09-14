@@ -40,34 +40,6 @@ HL_Mar <- function(scratch_env = NULL){
     colnames(df)[colnames(df)=="FWT.SUM"] <- "CATCATCHWGT"
     return(df)
   }
-  # add set-level catch information
-  #   tmp_HL=merge(tmp_HL, GSCAT, by = c("SPEC", "MISSION", "SETNO"), all.y=T)
-  #   tmp_HL$LENMEASTYPE <- NA
-  #   tmp_HL$SPEC <-NULL
-  #   colnames(tmp_HL)[colnames(tmp_HL)=="TOTNO"] <- "TOTALNO"
-  #   # LNGTCODE is how ICES describes length classes 1 = 1cm length class
-  #   colnames(tmp_HL)[colnames(tmp_HL)=="LGRP"] <- "LNGTCODE"
-  #
-  #   # Make CATCATCHWGT -9 in cases where the no weights exist
-  #   tmp_HL[is.na(tmp_HL$CATCATCHWGT),"CATCATCHWGT"]<--9
-  #   # joined GSCAT - may have a bunch of records with NA values for reqd fields
-  #   tmp_HL[is.na(tmp_HL$SEX),"SEX"]<--9
-  #   tmp_HL[is.na(tmp_HL$LNGTCLASS),"LNGTCLASS"]<--9
-  #   tmp_HL[is.na(tmp_HL$LNGTCODE),"LNGTCODE"]<--9
-  #   tmp_HL[is.na(tmp_HL$HLNOATLNGT),"HLNOATLNGT"]<--9
-  #   tmp_HL[tmp_HL$SUBWGT == 0,"SUBWGT"]<--9
-  #   tmp_HL$NOMEAS <- tmp_HL$HLNOATLNGT
-  #   tmp_HL$SUBFACTOR <- NA
-  #   tmp_HL[tmp_HL$TOTALNO > 0 & tmp_HL$NOMEAS > 0,"SUBFACTOR"]<-tmp_HL[tmp_HL$TOTALNO > 0 & tmp_HL$NOMEAS > 0,"TOTALNO"]/
-  #     tmp_HL[tmp_HL$TOTALNO > 0 & tmp_HL$NOMEAS > 0,"NOMEAS"]
-  #   tmp_HL[tmp_HL$TOTALNO == 0,"TOTALNO"]<--9
-  #   tmp_HL[tmp_HL$NOMEAS == -9 | tmp_HL$TOTALNO == -9,"SUBFACTOR"]<--9
-  #   tmp_HL[is.na(tmp_HL$CATIDENTIFIER) ,"CATIDENTIFIER"]<-1
-  #
-  #   tmp_HL$SPECCODETYPE <- "W" #worrms/aphiaid
-  #   tmp_HL[is.na(tmp_HL$SPECCODE),"SPECCODE"]<--9
-
-  #tmp_HL <- addSpCodes()
   handleGSINF<-function(){
     df<-scratch_env$GSINF
     df <- df[,c("MISSION","SETNO", "STRAT")]
@@ -81,7 +53,7 @@ HL_Mar <- function(scratch_env = NULL){
       df[df$TOTWGT > 0 & df$SAMPWGT > 0,"SUBFACTOR"] <- df[df$TOTWGT > 0 & df$SAMPWGT > 0,"TOTWGT"]/df[df$TOTWGT > 0 & df$SAMPWGT > 0,"SAMPWGT"]
       return(df)
     }
-    #rename some fields to matche ICES
+    #rename some fields to match ICES
     df = doSubFact(df)
     colnames(df)[colnames(df)=="TOTNO"] <- "TOTALNO"
     colnames(df)[colnames(df)=="SAMPWGT"] <- "SUBWGT"
@@ -101,19 +73,6 @@ HL_Mar <- function(scratch_env = NULL){
       df$FSEX<-NULL
       return(df)
     }
-    # addDevStage<-function(df = NULL){
-    #   df$DEVSTAGE<- -9
-    #   # if (nrow(df[which(is.na(df$FMAT)),])>0)         df[which(is.na(df$FMAT)),"DEVSTAGE"]<--9
-    #   # if (nrow(df[which(df$FMAT==0),])>0)             df[which(df$FMAT==0),"DEVSTAGE"]<--9 #DClark indicates that 0 should be NULL
-    #   # if (nrow(df[which(df$FMAT==9),])>0)             df[which(df$FMAT==9),"DEVSTAGE"]<--9 #DClark indicates that 9 is probably an error
-    #   # if (nrow(df[which(df$FMAT %in% c(1)),])>0)      df[which(df$FMAT %in% c(1)),"DEVSTAGE"]<-61
-    #   # if (nrow(df[which(df$FMAT %in% c(2,3,4)),])>0)  df[which(df$FMAT %in% c(2,3,4)),"DEVSTAGE"]<-62
-    #   # if (nrow(df[which(df$FMAT %in% c(5)),])>0)      df[which(df$FMAT %in% c(5)),"DEVSTAGE"]<-63
-    #   # if (nrow(df[which(df$FMAT %in% c(6)),])>0)      df[which(df$FMAT %in% c(6)),"DEVSTAGE"]<-64
-    #   # if (nrow(df[which(df$FMAT %in% c(7,8)),])>0)   df[which(df$FMAT %in% c(7,8)),"DEVSTAGE"]<-65
-    #   df$FMAT <- NULL
-    #   return(df)
-    # }
     handleDetSpecies<-function(df = NULL){
       #herring were recorded in mm starting SUMMER 2016 - this converts to cm (same units as LGRP)
       #MISSION reqd to avoid Spring surveys, where they were recorded in cm

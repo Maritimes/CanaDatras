@@ -32,6 +32,7 @@
 #' roracle will extract data ~ 5x faster.
 #' @param data.dir  The default is \code{NULL}. This is the path to your Mar.datawrangling
 #' rdata files
+#' @import Mar.datawrangling
 #' @return a list containing (named) objects - 1 for each generated HH file
 #' @family DATRAS
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
@@ -73,6 +74,7 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
               "AGERINGS","CANOATLNGT","INDWGT","MATURITYSCALE","FISHID","GENSAMP",
               "STOMSAMP","AGESOURCE","AGEPREPMET","OTGRADING","PARSAMP")
   cat("\n", "Extracting Data")
+  if (!exists("ds_all")) ds_all <<- Mar.datawrangling::load_datasources()
   Mar.datawrangling::get_data_custom(schema="GROUNDFISH",
                                      fn.oracle.username = fn.oracle.username,
                                      fn.oracle.password = fn.oracle.password,
@@ -98,6 +100,10 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
                                                     & scratch_env$GSMISSIONS$SEASON==season,]
     scratch_env$GSINF = scratch_env$GSINF[scratch_env$GSINF$GEAR %in% c(3,9,15)
                                           & scratch_env$GSINF$TYPE %in% c(1,3),]
+    #get rid of 4VSW cod data
+    scratch_env$GSINF <- scratch_env$GSINF[-which(scratch_env$GSINF$STRAT %in% c(396:411) & lubridate::month(scratch_env$GSINF$SDATE) %in% c(1,2,3,4)),]
+    
+    
     Mar.datawrangling::self_filter(keep_nullsets = T, env = scratch_env, quiet = T)
     return(scratch_env)
   }

@@ -15,24 +15,30 @@ HH_Mar <- function(scratch_env = NULL){
   df = df[,c("MISSION","BOTTOM_SALINITY","BOTTOM_TEMPERATURE","SDATE",
              "DEPTH","DIST","GEAR","DUR","SETNO","TYPE","LATITUDE",
              "LONGITUDE", "ELATITUDE", "ELONGITUDE", "STRAT", "CURNT",
-             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT")]
+             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT","DMIN","DMAX")]
   names(df) <- tolower(names(df))
   calcValues<-function(df=NULL){
     # Define some functions
     processTimes<-function(df=NULL){
-      #' Combine date & times to single object, and by setting TZ, ADT or AST gets applied
-      df$DATETIME = as.POSIXct(paste(df$sdate,sprintf('%04d',df$time)), format="%Y-%m-%d %H%M")
-      #' Convert to UTC, and R is smart enough to add 4 hrs to AST times, and 3 hrs to ADT times
-      attributes(df$DATETIME)$tzone = "UTC"
+
+      # Generate some additional values from our datetime -----------------------
+      df$YEAR<-lubridate::year(df$sdate)
+      df$MONTH<-lubridate::month(df$sdate)
+      df$DAY<-lubridate::day(df$sdate)
+      df$HOUR <- as.integer(substr(sprintf('%04d',df$time),1,2))
+      df$MIN <- as.integer(substr(sprintf('%04d',df$time),3,4))
+      
+      df$DATETIME = lubridate::make_datetime(year = df$YEAR, month = df$MONTH, day = df$DAY, hour =df$HOUR, min = df$MIN, sec=0, tz = "Canada/Atlantic")
+
+
+      df$QUARTER<-lubridate::quarter(df$DATETIME)
+      df$TIMESHOT<-paste0(df$HOUR,df$MIN)
+      
+      
       df$sdate <- NULL
       df$time <- NULL
-      # Generate some additional values from our datetime -----------------------
-      df$YEAR<-lubridate::year(df$DATETIME)
-      df$MONTH<-lubridate::month(df$DATETIME)
-      df$DAY<-lubridate::day(df$DATETIME)
-      df$QUARTER<-lubridate::quarter(df$DATETIME)
-      df$TIMESHOT<-paste0(sprintf('%02d',lubridate::hour(df$DATETIME)),
-                          sprintf('%02d',lubridate::minute(df$DATETIME)))
+      df$HOUR <- NULL
+      df$MIN <- NULL
       # Check if times are during the day or night ------------------------------
       df_sp <- Mar.utils::df_to_sp(df = df,lat.field = "latitude", lon.field = "longitude")
       df_sp@data$SUNRISE<- maptools::sunriset(crds = df_sp,dateTime = df_sp@data$DATETIME,
@@ -47,11 +53,11 @@ HH_Mar <- function(scratch_env = NULL){
       return(df)
     }
     processTowDets<-function(df=NULL){
-      doCSq <- function(df=NULL){
-        df = furdeb::lat_long_to_csquare(data=df,latitude_name = "latitude", longitude_name = "longitude", grid_square = 0.01)
-        colnames(df)[colnames(df)=="grid_square_0.01"] <- "STATREC"
-        return(df)
-      }
+      # doCSq <- function(df=NULL){
+      #   df = furdeb::lat_long_to_csquare(data=df,latitude_name = "latitude", longitude_name = "longitude", grid_square = 0.01)
+      #   colnames(df)[colnames(df)=="grid_square_0.01"] <- "STATREC"
+      #   return(df)
+      # }
       getTowDir <- function(df=NULL){
         # Calculate tow direction -------------------------------------------------
         df$TOWDIR<-NA
@@ -80,9 +86,10 @@ HH_Mar <- function(scratch_env = NULL){
         df$type <-NULL
         return(df)
       }
-      df <- doCSq(df)
+      # df <- doCSq(df)
       df <- getTowDir(df)
       df <- getHaulDets(df)
+      df$STATREC <- -9
       return(df)
     }
     processCurrents<-function(df=NULL){
@@ -267,10 +274,14 @@ HH_Mar <- function(scratch_env = NULL){
     # Convert units as necessary ----------------------------------------------
     df[!is.na(df$warpout),"warpout"]<- round(df[!is.na(df$warpout),"warpout"] * 1.8288,0)          #depth from fathoms to meters (non NA)
     df[!is.na(df$depth),"depth"]<- round(df[!is.na(df$depth),"depth"] * 1.8288,0)          #depth from fathoms to meters (non NA)
+    df[!is.na(df$dmin),"dmin"]<- round(df[!is.na(df$dmin),"dmin"] * 1.8288,0)          #dmin from fathoms to meters (non NA)
+    df[!is.na(df$dmax),"dmax"]<- round(df[!is.na(df$dmax),"dmax"] * 1.8288,0)          #dmax from fathoms to meters (non NA)
     df[!is.na(df$dist),"dist"]<- round(df[!is.na(df$dist),"dist"] * 1852,0)        #distance from NM to meters (non NA)
     df[!is.na(df$speed),"speed"]<- round(df[!is.na(df$speed),"speed"],1)
     colnames(df)[colnames(df)=="warpout"] <- "WARPLNGT"                     #pretty sure it's in meters
-    colnames(df)[colnames(df)=="depth"] <- "DEPTH"
+    colnames(df)[colnames(df)=="depth"] <- "DEPTH"    
+    colnames(df)[colnames(df)=="dmin"] <- "MINTRAWLDEPTH"
+    colnames(df)[colnames(df)=="dmax"] <- "MAXTRAWLDEPTH"
     colnames(df)[colnames(df)=="dist"] <- "DISTANCE"
     colnames(df)[colnames(df)=="speed"] <- "GROUNDSPEED"
     return(df)
@@ -293,11 +304,10 @@ HH_Mar <- function(scratch_env = NULL){
                'GROUNDSPEED','SPEEDWATER','SURCURDIR','SURCURSPEED',
                'BOTCURDIR','BOTCURSPEED','WINDDIR','WINDSPEED','SWELLDIR',
                'SWELLHEIGHT','SURTEMP','BOTTEMP','SURSAL','BOTSAL',
-               'THERMOCLINE','THCLINEDEPTH','mission')]
+               'THERMOCLINE','THCLINEDEPTH','MINTRAWLDEPTH','MAXTRAWLDEPTH','mission')]
     df[is.na(df)]<- -9
     return(df)
   }
-
   # Get all of the requested data
   tmp_HH <- calcValues(df)
   tmp_HH <- addPlatformDets(tmp_HH)

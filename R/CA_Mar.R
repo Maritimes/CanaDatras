@@ -129,7 +129,8 @@ CA_Mar <- function(scratch_env = NULL, HL = NULL){
   #   ))))
   #   return(df)
   # }
-  handleSpecimens<- function(){
+  handleSpecimens<- function(){    
+
     df<-scratch_env$GS_LV1_OBSERVATIONS[paste0(scratch_env$GS_LV1_OBSERVATIONS$MISSION,"_",
                                                scratch_env$GS_LV1_OBSERVATIONS$SETNO,"_",
                                                scratch_env$GS_LV1_OBSERVATIONS$SPEC,"_",
@@ -138,8 +139,9 @@ CA_Mar <- function(scratch_env = NULL, HL = NULL){
                                                  GSDET$SETNO,"_",
                                                  GSDET$SPEC,"_",
                                                  GSDET$SIZE_CLASS),  c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "LV1_OBSERVATION")]
-
+if (nrow(df)==0)return(NULL)
     df$GENSAMP <- -9 #Flag whether genetic sample was taken
+
     if (nrow(df[grep(pattern = "Genetic",x = df$LV1_OBSERVATION,ignore.case = T),])>0) df[grep(pattern = "Genetic",x = df$LV1_OBSERVATION,ignore.case = T),"GENSAMP"]<-"Y"
     df$STOMSAMP <- -9 #Flag whether stomach sampling was performed
     if (nrow(df[grep(pattern = "Stomach",x = df$LV1_OBSERVATION,ignore.case = T),])>0) df[grep(pattern = "Stomach",x = df$LV1_OBSERVATION,ignore.case = T),"STOMSAMP"]<-"Y"
@@ -152,10 +154,17 @@ CA_Mar <- function(scratch_env = NULL, HL = NULL){
   }
 #make a df
 GSDET <- handleGSDET()
+
 GSspecimens <- handleSpecimens() 
-GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$GENSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "GENSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
-GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$STOMSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "STOMSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
-GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$PARSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "PARSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
+if (is.null(GSspecimens)){
+  GSDET$GENSAMP <- NA
+  GSDET$STOMSAMP <- NA
+  GSDET$PARSAMP <- NA
+}else{
+  GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$GENSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "GENSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
+  GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$STOMSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "STOMSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
+  GSDET <- merge(GSDET, unique(GSspecimens[GSspecimens$PARSAMP=="Y", c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID", "PARSAMP")]), all.x=T, by = c("MISSION", "SETNO", "SPEC", "SIZE_CLASS", "SPECIMEN_ID"))
+}
 GSDET$AREATYPE <- 27
 colnames(GSDET)[colnames(GSDET)=="FWT"] <- "INDWGT"
 colnames(GSDET)[colnames(GSDET)=="SIZE_CLASS"] <- "CATIDENTIFIER"
