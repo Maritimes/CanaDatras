@@ -101,7 +101,7 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
     scratch_env$GSINF = scratch_env$GSINF[scratch_env$GSINF$GEAR %in% c(3,9,15)
                                           & scratch_env$GSINF$TYPE %in% c(1,3),]
     #get rid of 4VSW cod surey data
-    scratch_env$GSINF <- scratch_env$GSINF[-which(scratch_env$GSINF$STRAT %in% c(396:411) & lubridate::month(scratch_env$GSINF$SDATE) %in% c(1,2,3,4)),]
+    # scratch_env$GSINF <- scratch_env$GSINF[-which(scratch_env$GSINF$STRAT %in% c(396:411) & lubridate::month(scratch_env$GSINF$SDATE) %in% c(1,2,3,4)),]
     Mar.datawrangling::self_filter(keep_nullsets = T, env = scratch_env, quiet = T)
     return(scratch_env)
   }
