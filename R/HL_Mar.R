@@ -1,6 +1,7 @@
 #' @title HL_Mar
-#' @description This function generates ICES DATRAS-compatible HL files directly from the Maritimes
-#' groundfish database.
+#' @description This function generates ICES DATRAS-compatible "HL" files 
+#' directly from the Maritimes groundfish database. "HL" files contain Species 
+#' length-based information
 #' @param scratch_env default is \code{NULL} This is an environment containing the results of a
 #' Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH, HL and CA
 #' @return a df generated HL file

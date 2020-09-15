@@ -1,6 +1,7 @@
 #' @title HH_Mar
-#' @description This function generates ICES DATRAS-compatible HH files directly from the Maritimes
-#' groundfish database.
+#' @description This function generates ICES DATRAS-compatible "HH" files 
+#' directly from the Maritimes groundfish database. "HH" files contain Haul 
+#' metadata 
 #' @param scratch_env default is \code{NULL} This is an environment containing the results of a
 #' Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH, HL and CA
 #' @return a df generated HH file
@@ -20,31 +21,22 @@ HH_Mar <- function(scratch_env = NULL){
   calcValues<-function(df=NULL){
     # Define some functions
     processTimes<-function(df=NULL){
-
       # Generate some additional values from our datetime -----------------------
       df$YEAR<-lubridate::year(df$sdate)
       df$MONTH<-lubridate::month(df$sdate)
       df$DAY<-lubridate::day(df$sdate)
       df$HOUR <- as.integer(substr(sprintf('%04d',df$time),1,2))
       df$MIN <- as.integer(substr(sprintf('%04d',df$time),3,4))
-      
       df$DATETIME = lubridate::make_datetime(year = df$YEAR, month = df$MONTH, day = df$DAY, hour =df$HOUR, min = df$MIN, sec=0, tz = "Canada/Atlantic")
-
-
       df$QUARTER<-lubridate::quarter(df$DATETIME)
       df$TIMESHOT<-paste0(df$HOUR,df$MIN)
-      
-      
       df$sdate <- NULL
       df$time <- NULL
       df$HOUR <- NULL
       df$MIN <- NULL
-      # Check if times are during the day or night ------------------------------
       df_sp <- Mar.utils::df_to_sp(df = df,lat.field = "latitude", lon.field = "longitude")
-      df_sp@data$SUNRISE<- maptools::sunriset(crds = df_sp,dateTime = df_sp@data$DATETIME,
-                                              direction = "sunrise", POSIXct.out=TRUE)[,2]
-      df_sp@data$SUNSET<- maptools::sunriset(crds = df_sp,dateTime = df_sp@data$DATETIME,
-                                             direction = "sunset", POSIXct.out=TRUE)[,2]
+      df_sp@data$SUNRISE <- maptools::sunriset(crds = df_sp,dateTime = df_sp@data$DATETIME,direction = "sunrise", POSIXct.out=TRUE)[,2]
+      df_sp@data$SUNSET <- maptools::sunriset(crds = df_sp,dateTime = df_sp@data$DATETIME,direction = "sunset", POSIXct.out=TRUE)[,2]
       df<-df_sp@data
       rm(df_sp)
       df$DAYNIGHT<-NA
@@ -53,23 +45,17 @@ HH_Mar <- function(scratch_env = NULL){
       return(df)
     }
     processTowDets<-function(df=NULL){
-      # doCSq <- function(df=NULL){
-      #   df = furdeb::lat_long_to_csquare(data=df,latitude_name = "latitude", longitude_name = "longitude", grid_square = 0.01)
-      #   colnames(df)[colnames(df)=="grid_square_0.01"] <- "STATREC"
-      #   return(df)
-      # }
       getTowDir <- function(df=NULL){
-        # Calculate tow direction -------------------------------------------------
+        df[,"latitude"] <- round(df[,"latitude"],4)
+        df[,"longitude"] <- round(df[,"longitude"],4)
+        df[!is.na(df$elatitude),"elatitude"] <- round(df[!is.na(df$elatitude),"elatitude"],4)
+        df[!is.na(df$elongitude),"elongitude"] <- round(df[!is.na(df$elongitude),"elongitude"],4)
         df$TOWDIR<-NA
         df[which(!is.na(df$latitude) & !is.na(df$longitude) &
                    !is.na(df$elatitude) &!is.na(df$elongitude)) ,"TOWDIR"] <- round(geosphere::bearingRhumb(p1 = df[which(!is.na(df$latitude) & !is.na(df$longitude) &
                                                                                                                             !is.na(df$elatitude) &!is.na(df$elongitude)) ,c("longitude","latitude")],
                                                                                                             p2 = df[which(!is.na(df$latitude) & !is.na(df$longitude) &
                                                                                                                             !is.na(df$elatitude) &!is.na(df$elongitude)) ,c("elongitude","elatitude")]),0)
-        df[,"latitude"] <- round(df[,"latitude"],4)
-        df[,"longitude"] <- round(df[,"longitude"],4)
-        df[!is.na(df$elatitude),"elatitude"] <- round(df[!is.na(df$elatitude),"elatitude"],4)
-        df[!is.na(df$elongitude),"elongitude"] <- round(df[!is.na(df$elongitude),"elongitude"],4)
         colnames(df)[colnames(df)=="latitude"] <- "SHOOTLAT"
         colnames(df)[colnames(df)=="longitude"] <- "SHOOTLONG"
         colnames(df)[colnames(df)=="elatitude"] <- "HAULLAT"
@@ -77,16 +63,12 @@ HH_Mar <- function(scratch_env = NULL){
         return(df)
       }
       getHaulDets<-function(df= NULL){
-        # Decode TYPE to haulval ------------------------------------------------
-        #I can only match up 3 with https://vocab.ices.dk/?ref=1
+        # Decode TYPE to haulval  https://vocab.ices.dk/?ref=1
         df$HAULVAL<- NA
-        df$HAULVAL <- ifelse(df$type == 1, "V",                          #Valid Haul
-                             ifelse(df$type == 3, "I",                          #Invalid Haul
-                                    NA))
+        df$HAULVAL <- ifelse(df$type == 1, "V", ifelse(df$type == 3, "I", NA))
         df$type <-NULL
         return(df)
       }
-      # df <- doCSq(df)
       df <- getTowDir(df)
       df <- getHaulDets(df)
       df$STATREC <- -9
@@ -117,14 +99,12 @@ HH_Mar <- function(scratch_env = NULL){
       df[!is.na(df$SURCURDIR) & df$SURCURDIR<0,"SURCURDIR"]<-df[!is.na(df$SURCURDIR) & df$SURCURDIR<0,"SURCURDIR"]+360
       df[!is.na(df$SURCURDIR) & df$SURCURDIR>360 & df$SURCURDIR < 999,"SURCURDIR"]<-df[!is.na(df$SURCURDIR) & df$SURCURDIR>360 & df$SURCURDIR < 999,"SURCURDIR"]-360
       df$curnt <- NULL
-
       return(df)
     }
     processWind<-function(df=NULL){
       # Turn force column into WINDSPEED ----------------------------------------
       df$WINDSPEED<-NA
-      # force holds a value of 1-8, each of which is decoded into a beaufort scale range
-      # this grabs the lower bound of that range (in knots) and converts it to m/s
+      # force holds a value of 1-8, each of which is decoded into to the lower bound of the beaufort scale range
       df$WINDSPEED <- ifelse(df$force == 0, 0,
                              ifelse(df$force == 1, 1,
                                     ifelse(df$force == 2, 4,
@@ -135,10 +115,9 @@ HH_Mar <- function(scratch_env = NULL){
                                                                        ifelse(df$force == 7, 28,
                                                                               ifelse(df$force == 8, 34,
                                                                                      NA)))))))))
-      df$WINDSPEED = round(df$WINDSPEED*0.514444,0)
+      df$WINDSPEED = round(df$WINDSPEED*0.514444,0) #knots to  m/s
       df$force<-NULL
       colnames(df)[colnames(df)=="wind"] <- "WINDDIR"                         #dir in 360deg
-
       return(df)
     }
     df <- processTimes(df)
@@ -289,7 +268,8 @@ HH_Mar <- function(scratch_env = NULL){
   addSp <- function(df=NULL){
     df$BYCSPECRECCODE <- 1
     df[df$YEAR<2005,"BYCSPECRECCODE"]<-6
-    df$STDSPECRECCODE <- 1                                                      #(https://vocab.ices.dk/?ref=89)                                                    #Maybe we can use this to store information related to the changes in species ID over time?
+    df$STDSPECRECCODE <- 1                                                      #(https://vocab.ices.dk/?ref=89)                                                    
+    #Maybe we can use this to store information related to the changes in species ID over time?
     return(df)
   }
   finalClean <- function(df=NULL){
@@ -316,7 +296,7 @@ HH_Mar <- function(scratch_env = NULL){
   tmp_HH <- convertUnits(tmp_HH)
   tmp_HH <- addSp(tmp_HH)
   tmp_HH <- finalClean(tmp_HH)
-
+  
   cat("Done")
   return(tmp_HH)
 }

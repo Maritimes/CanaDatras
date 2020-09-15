@@ -50,29 +50,29 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
   scratch_env = new.env()
   results<-list()
   ord_HH <- c("RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
-              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR",
-              "MONTH","DAY","TIMESHOT","STRATUM","HAULDUR","DAYNIGHT",
-              "SHOOTLAT","SHOOTLONG","HAULLAT","HAULLONG","STATREC","DEPTH",
-              "HAULVAL","HYDROSTNO","STDSPECRECCODE","BYCSPECRECCODE","DATATYPE",
-              "NETOPENING","RIGGING","TICKLER","DISTANCE","WARPLNGT","WARPDIA",
-              "WARPDEN","DOORSURFACE","DOORWGT","DOORSPREAD","WINGSPREAD",
-              "BUOYANCY","KITEDIM","WGTGROUNDROPE","TOWDIR","GROUNDSPEED",
-              "SPEEDWATER","SURCURDIR","SURCURSPEED","BOTCURDIR","BOTCURSPEED",
-              "WINDDIR","WINDSPEED","SWELLDIR","SWELLHEIGHT","SURTEMP","BOTTEMP",
-              "SURSAL","BOTSAL","THERMOCLINE","THCLINEDEPTH","CODENDMESH",
-              "SECCHIDEPTH","TURBIDITY","TIDEPHASE","TIDESPEED","PELSAMPTYPE",
+              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR", "MONTH","DAY",
+              "TIMESHOT","STRATUM","HAULDUR","DAYNIGHT", "SHOOTLAT","SHOOTLONG",
+              "HAULLAT","HAULLONG","STATREC","DEPTH", "HAULVAL","HYDROSTNO",
+              "STDSPECRECCODE","BYCSPECRECCODE","DATATYPE","NETOPENING",
+              "RIGGING","TICKLER","DISTANCE","WARPLNGT","WARPDIA", "WARPDEN",
+              "DOORSURFACE","DOORWGT","DOORSPREAD","WINGSPREAD","BUOYANCY",
+              "KITEDIM","WGTGROUNDROPE","TOWDIR","GROUNDSPEED","SPEEDWATER",
+              "SURCURDIR","SURCURSPEED","BOTCURDIR","BOTCURSPEED","WINDDIR",
+              "WINDSPEED","SWELLDIR","SWELLHEIGHT","SURTEMP","BOTTEMP","SURSAL",
+              "BOTSAL","THERMOCLINE","THCLINEDEPTH","CODENDMESH","SECCHIDEPTH",
+              "TURBIDITY","TIDEPHASE","TIDESPEED","PELSAMPTYPE", 
               "MINTRAWLDEPTH","MAXTRAWLDEPTH")
-  ord_HL <- c("RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
-              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR",
-              "SPECCODETYPE", "SPECCODE","SPECVAL","SEX","TOTALNO",
-              "CATIDENTIFIER","NOMEAS","SUBFACTOR","SUBWGT","CATCATCHWGT",
-              "LNGTCODE","LNGTCLASS","HLNOATLNGT","DEVSTAGE","LENMEASTYPE")
+  ord_HL <- c("RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT", 
+              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE", 
+              "SPECCODE","SPECVAL","SEX","TOTALNO","CATIDENTIFIER","NOMEAS",
+              "SUBFACTOR","SUBWGT","CATCATCHWGT","LNGTCODE","LNGTCLASS",
+              "HLNOATLNGT","DEVSTAGE","LENMEASTYPE")
   ord_CA <- c("RECORDTYPE", "QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
-              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR",
-              "SPECCODETYPE","SPECCODE",
-              "AREATYPE","AREACODE","LNGTCODE","LNGTCLASS","SEX","MATURITY","PLUSGR",
-              "AGERINGS","CANOATLNGT","INDWGT","MATURITYSCALE","FISHID","GENSAMP",
-              "STOMSAMP","AGESOURCE","AGEPREPMET","OTGRADING","PARSAMP")
+              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE",
+              "SPECCODE","AREATYPE","AREACODE","LNGTCODE","LNGTCLASS","SEX",
+              "MATURITY","PLUSGR","AGERINGS","CANOATLNGT","INDWGT",
+              "MATURITYSCALE","FISHID","GENSAMP","STOMSAMP","AGESOURCE",
+              "AGEPREPMET","OTGRADING","PARSAMP")
   cat("\n", "Extracting Data")
   if (!exists("ds_all")) ds_all <<- Mar.datawrangling::load_datasources()
   Mar.datawrangling::get_data_custom(schema="GROUNDFISH",
@@ -100,10 +100,8 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
                                                     & scratch_env$GSMISSIONS$SEASON==season,]
     scratch_env$GSINF = scratch_env$GSINF[scratch_env$GSINF$GEAR %in% c(3,9,15)
                                           & scratch_env$GSINF$TYPE %in% c(1,3),]
-    #get rid of 4VSW cod data
+    #get rid of 4VSW cod surey data
     scratch_env$GSINF <- scratch_env$GSINF[-which(scratch_env$GSINF$STRAT %in% c(396:411) & lubridate::month(scratch_env$GSINF$SDATE) %in% c(1,2,3,4)),]
-    
-    
     Mar.datawrangling::self_filter(keep_nullsets = T, env = scratch_env, quiet = T)
     return(scratch_env)
   }

@@ -1,6 +1,6 @@
 #' @title CA_Mar
-#' @description This function generates ICES DATRAS-compatible CA files directly from the Maritimes
-#' groundfish database.
+#' @description This function generates ICES DATRAS-compatible "CA" files 
+#' directly from the Maritimes. "CA" files contain Species age-based information
 #' @param scratch_env default is \code{NULL} This is an environment containing the results of a
 #' Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH, HL and CA
 #' @return a df generated CA file
@@ -51,38 +51,10 @@ CA_Mar <- function(scratch_env = NULL, HL = NULL){
       df$AGEPREPMET <- -9 #Age reading preparation method
       return(df)
     }
-    addPreStomSamp <-function(df=NULL){
-      
-
-      # SELECT * FROM GSDET WHERE 
-      # upper(regexp_replace(remarks, ' +', ' ')) like '%SWF%'  OR (
-      #   upper(regexp_replace(remarks, ' +', ' ')) like '%STOMACH%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%NO STOMACH%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH LOST%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH DISCARDED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH NOT%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACHS NOT%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%DROPPED THE STOMACH%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH TOO%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH EVERTED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH INVERTED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH DISGORGED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH EXPLODED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH MISSING%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%CUT STOMACH%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH CUT%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH CUT OPEN%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH SLIT%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH NICKED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH PUNCTURED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH PERFORATED%' AND
-      #   upper(regexp_replace(remarks, ' +', ' ')) not like '%STOMACH PIERCED%')
-      # ORDER BY SUBSTR(MISSION,4,4) 
-      # 
-
-      return(df)
-      
-    }
+    # addPreStomSamp <-function(df=NULL){
+    #   return(df)
+    #   
+    # }
     handleDetSpecies<-function(df = NULL){
       #herring were recorded in mm starting SUMMER 2016 - this converts to cm (same units as LGRP)
       #MISSION reqd to avoid Spring surveys, where they were recorded in cm
@@ -98,7 +70,7 @@ CA_Mar <- function(scratch_env = NULL, HL = NULL){
     df <- addMaturity(df)
     df <- addAges(df)
     df <- handleDetSpecies(df)
-    df <- addPreStomSamp(df)
+    # df <- addPreStomSamp(df)
     if (nrow(df[which(is.na(df$FWT)),])>0) df[which(is.na(df$FWT)),"FWT"]<-0
     df$FMAT <- NULL
     return(df)
@@ -144,7 +116,8 @@ if (nrow(df)==0)return(NULL)
 
     if (nrow(df[grep(pattern = "Genetic",x = df$LV1_OBSERVATION,ignore.case = T),])>0) df[grep(pattern = "Genetic",x = df$LV1_OBSERVATION,ignore.case = T),"GENSAMP"]<-"Y"
     df$STOMSAMP <- -9 #Flag whether stomach sampling was performed
-    if (nrow(df[grep(pattern = "Stomach",x = df$LV1_OBSERVATION,ignore.case = T),])>0) df[grep(pattern = "Stomach",x = df$LV1_OBSERVATION,ignore.case = T),"STOMSAMP"]<-"Y"
+
+    if (nrow(df[grep(pattern = "Stomach Number",x = df$LV1_OBSERVATION,ignore.case = T),])>0) df[grep(pattern = "Stomach Number",x = df$LV1_OBSERVATION,ignore.case = T),"STOMSAMP"]<-"Y"
     df$PARSAMP <- -9 #Flag whether parasites sampling was performed    
     #colnames(df)[colnames(df)=="FSHNO"] <- "FISHID" #these are numbered per mission/set/species
     # colnames(df)[colnames(df)=="FWT"] <- "INDWGT"
