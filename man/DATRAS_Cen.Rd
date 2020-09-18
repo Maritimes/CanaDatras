@@ -24,6 +24,7 @@ ICES DATRAS-compatible files for Central region.
 }
 \seealso{
 Other DATRAS: 
+\code{\link{CA_Mar}()},
 \code{\link{DATRAS_Gulf}()},
 \code{\link{DATRAS_Mar}()},
 \code{\link{DATRAS_NFLD}()},

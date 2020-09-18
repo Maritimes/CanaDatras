@@ -76,6 +76,7 @@ This function generates ICES DATRAS-compatible HH for a particular DFO region.
 }
 \seealso{
 Other DATRAS: 
+\code{\link{CA_Mar}()},
 \code{\link{DATRAS_Cen}()},
 \code{\link{DATRAS_Gulf}()},
 \code{\link{DATRAS_Mar}()},

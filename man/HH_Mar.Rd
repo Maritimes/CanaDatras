@@ -14,11 +14,13 @@ Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH
 a df generated HH file
 }
 \description{
-This function generates ICES DATRAS-compatible HH files directly from the Maritimes
-groundfish database.
+This function generates ICES DATRAS-compatible "HH" files 
+directly from the Maritimes groundfish database. "HH" files contain Haul 
+metadata
 }
 \seealso{
 Other DATRAS: 
+\code{\link{CA_Mar}()},
 \code{\link{DATRAS_Cen}()},
 \code{\link{DATRAS_Gulf}()},
 \code{\link{DATRAS_Mar}()},
@@ -32,8 +34,6 @@ Other DATRAS:
 Mike McMahon, \email{Mike.McMahon@dfo-mpo.gc.ca}
  @export
 drop unneeded fields, and make original cols lowercase - finals will be uppercase
-Combine date & times to single object, and by setting TZ, ADT or AST gets applied
-Convert to UTC, and R is smart enough to add 4 hrs to AST times, and 3 hrs to ADT times
 we record the direction of the current relative to the ship (eg to bow,
 to starboard, etc), but ICES wants it in a compass direction.
 I use the tow direction (determined above) combined with the

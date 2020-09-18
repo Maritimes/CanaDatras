@@ -24,6 +24,7 @@ ICES DATRAS-compatible files for Gulf region.
 }
 \seealso{
 Other DATRAS: 
+\code{\link{CA_Mar}()},
 \code{\link{DATRAS_Cen}()},
 \code{\link{DATRAS_Mar}()},
 \code{\link{DATRAS_NFLD}()},
