@@ -51,7 +51,7 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
   results<-list()
   ord_HH <- c("RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
               "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR", "MONTH","DAY",
-              "TIMESHOT","STRATUM","HAULDUR","DAYNIGHT", "SHOOTLAT","SHOOTLONG",
+              "TIMESHOT","DEPTHSTRATUM","HAULDUR","DAYNIGHT", "SHOOTLAT","SHOOTLONG",
               "HAULLAT","HAULLONG","STATREC","DEPTH", "HAULVAL","HYDROSTNO",
               "STDSPECRECCODE","BYCSPECRECCODE","DATATYPE","NETOPENING",
               "RIGGING","TICKLER","DISTANCE","WARPLNGT","WARPDIA", "WARPDEN",
@@ -66,7 +66,7 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
               "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE", 
               "SPECCODE","SPECVAL","SEX","TOTALNO","CATIDENTIFIER","NOMEAS",
               "SUBFACTOR","SUBWGT","CATCATCHWGT","LNGTCODE","LNGTCLASS",
-              "HLNOATLNGT","DEVSTAGE","LENMEASTYPE")
+              "HLNOATLNGT","LENMEASTYPE") #"DEVSTAGE"
   ord_CA <- c("RECORDTYPE", "QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
               "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE",
               "SPECCODE","AREATYPE","AREACODE","LNGTCODE","LNGTCLASS","SEX",
@@ -125,19 +125,44 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
       tmp_HL$RECORDTYPE <- "HL"
       
       tmp_CA <- CA_Mar(scratch_env = tmp_env, HL = tmp_HL)
-      tmp_CA <- merge(unique(tmp_CA), unique(tmp_HH[,c("mission", "STNO","DEPTHSTRATUM")]), all.x=T)
+      tmp_CA<-merge(tmp_HH[,c("mission","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT","GEAREXP","DOORTYPE","STNO","HAULNO","YEAR","DEPTHSTRATUM")], tmp_CA, all.y = T)
+      
+      
       colnames(tmp_CA)[colnames(tmp_CA)=="DEPTHSTRATUM"] <- "AREACODE"
       tmp_CA[is.na(tmp_CA)]<- -9
-
        SPP <- sort(unique(c(unique(scratch_env$GSCAT$SPEC), unique(scratch_env$GSDET$SPEC))))
        SPP <- data.frame(SPEC = SPP)
        GSSPECIES_CODES <- scratch_env$GSSPECIES_CODES[scratch_env$GSSPECIES_CODES$CODE %in% SPP$SPEC,c("CODE","APHIAID")]
        colnames(GSSPECIES_CODES)[colnames(GSSPECIES_CODES)=="APHIAID"] <- "SPECCODE"
        GSSPECIES_CODES$SPECCODETYPE <- -9
        GSSPECIES_CODES[!is.na(GSSPECIES_CODES$SPECCODE),"SPECCODETYPE"]<- "W"
-       
+       GSSPECIES_CODES[is.na(GSSPECIES_CODES$SPECCODE),"SPECCODE"]<- -9
+
        tmp_HL <- merge(tmp_HL, GSSPECIES_CODES, all.x=T, by.x= "SPEC", by.y="CODE")
+       badSp1<- tmp_HL[tmp_HL$SPECCODE == -9, "SPEC"]
+       if(length(badSp1)<1)badSp1<-NA
        tmp_CA <- merge(tmp_CA, GSSPECIES_CODES, all.x=T, by.x= "SPEC", by.y="CODE")
+       badSp2<- tmp_CA[tmp_CA$SPECCODE == -9, "SPEC"]
+       if(length(badSp2)<1)badSp2<-NA
+       badSp <- unique(c(badSp1, badSp2))
+       badSp <- na.omit(badSp)
+       if (length(badSp)>0){
+         cat("!!!\n","The following species don't have AphiaIDs and can't be included until they do.  Until then, they will be dropped:","\n")
+         print(tmp_env$GSSPECIES[tmp_env$GSSPECIES$CODE %in% badSp, c("CODE", "COMM", "SPEC")])
+         cat("\n!!!")
+         tmp_CA <- tmp_CA[!(tmp_CA$SPEC %in% badSp),]
+         tmp_HL <- tmp_HL[!(tmp_HL$SPEC %in% badSp),]
+       }
+#if any fields are missing from the returned data that should exist, those 
+#fields are added, and set to -9       
+       HHMissing <- setdiff(ord_HH, names(tmp_HH))
+       tmp_HH[HHMissing]<- -9
+       
+       HLMissing <- setdiff(ord_HL, names(tmp_HL))
+       tmp_HL[HLMissing]<- -9
+       
+       CAMissing <- setdiff(ord_CA, names(tmp_CA))
+       tmp_CA[CAMissing]<- -9
        
       ord_HH<-ord_HH[ord_HH %in% names(tmp_HH)]
       ord_HL<-ord_HL[ord_HL %in% names(tmp_HL)]
@@ -145,13 +170,12 @@ DATRAS_Mar <- function(yr=NULL, season=NULL, csv =T,
       tmp_HH<-tmp_HH[,ord_HH]
       tmp_HL<-tmp_HL[,ord_HL]
       tmp_CA<-tmp_CA[,ord_CA]
-      
       if(csv){
         theFile <- file.create(fullnm)
         utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, sep = ",")
         utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, sep = ",", append = T) 
         utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = FALSE, quote = FALSE, sep = ",", append = T)
-
+        cat("\n","File written to", getwd(),"/", fullnm)
       }
       thisyr <- list(HH = tmp_HH, HL = tmp_HL, CA = tmp_CA)
       results[[nm]]<-thisyr

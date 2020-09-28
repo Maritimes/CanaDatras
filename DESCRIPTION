@@ -1,7 +1,7 @@
 Package: CanaDatras
 Type: Package
 Title: Facilitates converting Canadian Trawl Survey Data into DATRAS format
-Version: 2020.09.18
+Version: 2020.09.28
 Authors@R: c(
     person("Daniel", "Ricard", email = "Daniel.Ricard@dfo-mpo.gc.ca", role = "cre"),
     person("Mike", "McMahon", email = "mike.mcmahon@dfo-mpo.gc.ca", role = "aut"))

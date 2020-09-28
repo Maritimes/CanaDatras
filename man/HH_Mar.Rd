@@ -42,5 +42,6 @@ For example, if the tow was found to be West to East (90deg), and the CURNT valu
 "to starboard", the combined angle would be 90+90 = 180 (or South)
 I am awaiting direction on the values below from folks who are familiar with the gear
 In the meantime all of these become "-9"
+MINTRAWLDEPTH','MAXTRAWLDEPTH',
 }
 \concept{DATRAS}

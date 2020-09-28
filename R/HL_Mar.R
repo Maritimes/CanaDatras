@@ -140,7 +140,7 @@ HL_Mar <- function(scratch_env = NULL){
   forAgg <- merge(SPP[,c("SPEC", "LNGTCODE")], GSDET[,c("SPEC", "MISSION","SETNO", "FLEN", "FWT", "SEX","CATIDENTIFIER")], by = "SPEC", all.y = T )
   tmp_HL <- aggByLenSexGroups(forAgg)
   tmp_HL <- tmp_HL[,c("SPEC", "MISSION","SETNO","SEX","LNGTCLASS","CATIDENTIFIER","HLNOATLNGT", "CATCATCHWGT")]
-  tmp_HL$DEVSTAGE <- -9 #devstage (i.e. maturity) not used at a haul-level (i.e. GSCAT)
+  # tmp_HL$DEVSTAGE <- -9 #devstage (i.e. maturity) not used at a haul-level (i.e. GSCAT)
 
   tmp_HL = merge(tmp_HL, GSCAT, all.x = T)
   noMeas <- getNoMeas(tmp_HL[,c("SPEC", "MISSION", "SETNO", "SEX", "HLNOATLNGT", "CATIDENTIFIER")])

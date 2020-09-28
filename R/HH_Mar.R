@@ -16,7 +16,7 @@ HH_Mar <- function(scratch_env = NULL){
   df = df[,c("MISSION","BOTTOM_SALINITY","BOTTOM_TEMPERATURE","SDATE",
              "DEPTH","DIST","GEAR","DUR","SETNO","TYPE","LATITUDE",
              "LONGITUDE", "ELATITUDE", "ELONGITUDE", "STRAT", "CURNT",
-             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT","DMIN","DMAX")]
+             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT")]  #,"DMIN","DMAX")]
   names(df) <- tolower(names(df))
   calcValues<-function(df=NULL){
     # Define some functions
@@ -29,7 +29,7 @@ HH_Mar <- function(scratch_env = NULL){
       df$MIN <- as.integer(substr(sprintf('%04d',df$time),3,4))
       df$DATETIME = lubridate::make_datetime(year = df$YEAR, month = df$MONTH, day = df$DAY, hour =df$HOUR, min = df$MIN, sec=0, tz = "Canada/Atlantic")
       df$QUARTER<-lubridate::quarter(df$DATETIME)
-      df$TIMESHOT<-paste0(df$HOUR,df$MIN)
+      df$TIMESHOT<-sprintf('%04d',df$time)
       df$sdate <- NULL
       df$time <- NULL
       df$HOUR <- NULL
@@ -246,21 +246,21 @@ HH_Mar <- function(scratch_env = NULL){
     df$DATATYPE <- 'R'
     df$RECORDTYPE <- "HH"
     #df$SURVEY <- "CAN-MAR"    #make up a ficticious survey name
-    df$COUNTRY <- "CAN"
+    df$COUNTRY <- "CA"
     return(df)
   }
   convertUnits <- function(df=NULL){
     # Convert units as necessary ----------------------------------------------
     df[!is.na(df$warpout),"warpout"]<- round(df[!is.na(df$warpout),"warpout"] * 1.8288,0)          #depth from fathoms to meters (non NA)
     df[!is.na(df$depth),"depth"]<- round(df[!is.na(df$depth),"depth"] * 1.8288,0)          #depth from fathoms to meters (non NA)
-    df[!is.na(df$dmin),"dmin"]<- round(df[!is.na(df$dmin),"dmin"] * 1.8288,0)          #dmin from fathoms to meters (non NA)
-    df[!is.na(df$dmax),"dmax"]<- round(df[!is.na(df$dmax),"dmax"] * 1.8288,0)          #dmax from fathoms to meters (non NA)
+    # df[!is.na(df$dmin),"dmin"]<- round(df[!is.na(df$dmin),"dmin"] * 1.8288,0)          #dmin from fathoms to meters (non NA)
+    # df[!is.na(df$dmax),"dmax"]<- round(df[!is.na(df$dmax),"dmax"] * 1.8288,0)          #dmax from fathoms to meters (non NA)
     df[!is.na(df$dist),"dist"]<- round(df[!is.na(df$dist),"dist"] * 1852,0)        #distance from NM to meters (non NA)
     df[!is.na(df$speed),"speed"]<- round(df[!is.na(df$speed),"speed"],1)
     colnames(df)[colnames(df)=="warpout"] <- "WARPLNGT"                     #pretty sure it's in meters
     colnames(df)[colnames(df)=="depth"] <- "DEPTH"    
-    colnames(df)[colnames(df)=="dmin"] <- "MINTRAWLDEPTH"
-    colnames(df)[colnames(df)=="dmax"] <- "MAXTRAWLDEPTH"
+    # colnames(df)[colnames(df)=="dmin"] <- "MINTRAWLDEPTH"
+    # colnames(df)[colnames(df)=="dmax"] <- "MAXTRAWLDEPTH"
     colnames(df)[colnames(df)=="dist"] <- "DISTANCE"
     colnames(df)[colnames(df)=="speed"] <- "GROUNDSPEED"
     return(df)
@@ -284,7 +284,8 @@ HH_Mar <- function(scratch_env = NULL){
                'GROUNDSPEED','SPEEDWATER','SURCURDIR','SURCURSPEED',
                'BOTCURDIR','BOTCURSPEED','WINDDIR','WINDSPEED','SWELLDIR',
                'SWELLHEIGHT','SURTEMP','BOTTEMP','SURSAL','BOTSAL',
-               'THERMOCLINE','THCLINEDEPTH','MINTRAWLDEPTH','MAXTRAWLDEPTH','mission')]
+               'THERMOCLINE','THCLINEDEPTH','mission')]
+    #'MINTRAWLDEPTH','MAXTRAWLDEPTH',
     df[is.na(df)]<- -9
     return(df)
   }
