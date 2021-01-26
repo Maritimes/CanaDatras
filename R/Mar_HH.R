@@ -1,4 +1,4 @@
-#' @title HH_Mar
+#' @title Mar_HH
 #' @description This function generates ICES DATRAS-compatible "HH" files 
 #' directly from the Maritimes groundfish database. "HH" files contain Haul 
 #' metadata 
@@ -8,15 +8,25 @@
 #' @family DATRAS
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #'  @export
-HH_Mar <- function(scratch_env = NULL){
+Mar_HH <- function(scratch_env = NULL){
   cat("\n","Generating HH...")
+  round2 = function(x, n) {
+    #this function ensures that values ending in 0.5 are round up to teh next integer - not down to zero (R's default)
+    posneg = sign(x)
+    z = abs(x)*10^n
+    z = z + 0.5 + sqrt(.Machine$double.eps)
+    z = trunc(z)
+    z = z/10^n
+    z*posneg
+  }
+  
   df= merge(scratch_env$GSINF, scratch_env$GSMISSIONS, all.x = T)
   df = merge(df, scratch_env$GSWARPOUT, all.x=T)
   #' drop unneeded fields, and make original cols lowercase - finals will be uppercase
   df = df[,c("MISSION","BOTTOM_SALINITY","BOTTOM_TEMPERATURE","SDATE",
-             "DEPTH","DIST","GEAR","DUR","SETNO","TYPE","LATITUDE",
+             "DEPTH","DMIN", "DMAX", "DIST","GEAR","DUR","SETNO","TYPE","LATITUDE",
              "LONGITUDE", "ELATITUDE", "ELONGITUDE", "STRAT", "CURNT",
-             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT")]  #,"DMIN","DMAX")]
+             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT", "VESEL", "YEAR", "SEASON" )]  #,"DMIN","DMAX")]
   names(df) <- tolower(names(df))
   calcValues<-function(df=NULL){
     # Define some functions
@@ -118,6 +128,7 @@ HH_Mar <- function(scratch_env = NULL){
       df$WINDSPEED = round(df$WINDSPEED*0.514444,0) #knots to  m/s
       df$force<-NULL
       colnames(df)[colnames(df)=="wind"] <- "WINDDIR"                         #dir in 360deg
+      df$WINDDIR[df$WINDDIR == 0] <- 360 #DATRAS complains about 0 as wind direction
       return(df)
     }
     df <- processTimes(df)
@@ -127,78 +138,37 @@ HH_Mar <- function(scratch_env = NULL){
     return(df)
   }
   addPlatformDets <- function(df=NULL){
+    #' A = AT CAMERON
+    #' H = Lady Hammond
+    #' N = Needler
+    #' S = Teleost
+    #' V = Venture
+    #' T = Templeman
     addGearDets<-function(df=NULL){
       # Add Gear details --------------------------------------------------------
-      df$GEAR <- ifelse(df$gear == 3, "Y36", #Yankee 36
-                        ifelse(df$gear == 9, "W2A", #Western 2A
-                               ifelse(df$gear == 15, "US4S3B", #Yankee 36
-                                      NA)))
-      df$WINGSPREAD<- round(ifelse(df$gear == 3, 10.9728,                           #36ft in m
-                                   ifelse(df$gear == 9, 12.4968,                           #41 ft in
-                                          ifelse(df$gear==15, 13,                                 #provided in m - will be tow by tow in the future
-                                                 NA))),2)
-      #' I am awaiting direction on the values below from folks who are familiar with the gear
-      #' In the meantime all of these become "-9"
-      df$BUOYANCY<-df$DOORSPREAD <- df$DOORSURFACE<-df$DOORTYPE<-
-        df$DOORWGT<-df$GEAREXP<-df$KITEDIM<-df$NETOPENING<-
-        df$RIGGING<-df$TICKLER<-df$WARPDEN<-df$WARPDIA<-
-        df$WGTGROUNDROPE<-df$SWEEPLNGT<--9
-      # df$BUOYANCY<- ifelse(df$gear == 3, "<val for 3>",
-      #                   ifelse(df$gear == 9, "<val for 9>",
-      #                   ifelse(df$gear==15,"<val for 15>",
-      #                   NA)))
-      # df$DOORSPREAD <- ifelse(df$gear == 3, "<val for 3>",
-      #                     ifelse(df$gear == 9, "<val for 9>",
-      #                     ifelse(df$gear==15,"<val for 15>",
-      #                     NA)))
-      # df$DOORSURFACE<- ifelse(df$gear == 3, "<val for 3>",
-      #                      ifelse(df$gear == 9, "<val for 9>",
-      #                      ifelse(df$gear==15,"<val for 15>",
-      #                      NA)))
-      # df$DOORTYPE<-df$DOORTYPE<- ifelse(df$gear == 3, "<val for 3>",
-      #                   ifelse(df$gear == 9, "<val for 9>",
-      #                   ifelse(df$gear==15,"<val for 15>",
-      #                   NA)))
-      # df$DOORWGT<- ifelse(df$gear == 3, "<val for 3>",
-      #                  ifelse(df$gear == 9, "<val for 9>",
-      #                  ifelse(df$gear==15,"<val for 15>",
-      #                  NA)))
-      # df$GEAREXP<- ifelse(df$gear == 3, "<val for 3>",
-      #                  ifelse(df$gear == 9, "<val for 9>",
-      #                  ifelse(df$gear==15,"<val for 15>",
-      #                  NA)))
-      # df$KITEDIM<- ifelse(df$gear == 3, "<val for 3>",
-      #                  ifelse(df$gear == 9, "<val for 9>",
-      #                  ifelse(df$gear==15,"<val for 15>",
-      #                  NA)))
-      # df$NETOPENING<- ifelse(df$gear == 3, "<val for 3>",
-      #                     ifelse(df$gear == 9, "<val for 9>",
-      #                     ifelse(df$gear==15,"<val for 15>",
-      #                     NA)))
-      # df$RIGGING<- ifelse(df$gear == 3, "<val for 3>",
-      #                  ifelse(df$gear == 9, "<val for 9>",
-      #                  ifelse(df$gear==15,"<val for 15>",
-      #                  NA)))
-      # df$TICKLER<- ifelse(df$gear == 3, "<val for 3>",
-      #                  ifelse(df$gear == 9, "<val for 9>",
-      #                  ifelse(df$gear==15,"<val for 15>",
-      #                  NA)))
-      # df$WARPDEN<- ifelse(df$gear == 3, "<val for 3>",
-      #                  ifelse(df$gear == 9, "<val for 9>",
-      #                  ifelse(df$gear==15,"<val for 15>",
-      #                  NA)))
-      # df$WARPDIA<- ifelse(df$gear == 3, "<val for 3>",
-      #                  ifelse(df$gear == 9, "<val for 9>",
-      #                  ifelse(df$gear==15,"<val for 15>",
-      #                  NA)))
-      # df$WGTGROUNDROPE<- ifelse(df$gear == 3, "<val for 3>",
-      #                        ifelse(df$gear == 9, "<val for 9>",
-      #                        ifelse(df$gear==15,"<val for 15>",
-      #                        NA)))
-      # df$SWEEPLNGT<- ifelse(df$gear == 3, "<val for 3>",
-      #                    ifelse(df$gear == 9, "<val for 9>",
-      #                    ifelse(df$gear==15,"<val for 15>",
-      #                    NA)))
+      #set all gear params to -9 
+      df[,c("GEAR","BUOYANCY","WINGSPREAD","DOORSPREAD ","DOORSURFACE",
+            "DOORTYPE","DOORWGT","GEAREXP","KITEDIM","NETOPENING","RIGGING",
+            "TICKLER","WARPDEN","WARPDIA","WGTGROUNDROPE","SWEEPLNGT")] <- -9
+      # Universal Maritime Gear Constants ---------------------------------------
+      df[,c("KITEDIM","TICKLER", "GEAREXP","RIGGING")] <- data.frame(-9,-9,-9,"BM")
+      # Universal Western 2A Constants ------------------------------------------
+      df[df$gear ==9,c("GEAR","WINGSPREAD","DOORSPREAD", "DOORSURFACE","DOORWGT","NETOPENING","DOORTYPE")] <- data.frame("W2A",12.5,42.3672,4,950,4.57,"PE") #Doortype should be "PORTUGUESE"
+      # year-specific changes for W2A -------------------------------------------
+      df[df$gear ==9 & (df$YEAR >= 1982 &  df$YEAR < 2007), c("WARPDIA")] <-28.6      
+      df[df$gear ==9 & (df$YEAR >= 2007 &  df$YEAR < 2012), c("WARPDIA","WARPDEN","WGTGROUNDROPE")] <-data.frame(25.4,3.17,52.6694)
+      df[df$gear ==9 & df$YEAR <  2007, c("SWEEPLNGT","BUOYANCY")] <-data.frame(round(37.7952,0), round(195.16,0))
+      df[df$gear ==9 & df$YEAR >= 2007, c("SWEEPLNGT","BUOYANCY")] <-data.frame(round(33.8328,0), round(199.68))
+      
+      # Yankee 36 Constants -----------------------------------------------------
+      df[df$gear ==3,c("GEAR","WINGSPREAD","DOORSPREAD", "DOORSURFACE","DOORWGT","NETOPENING","DOORTYPE","SWEEPLNGT", "BUOYANCY","WARPDIA","WARPDEN","WGTGROUNDROPE")] <- data.frame( -9,10.7,36.6,2.9,450,2.7,"WR", 36.6, 97.58, 20, -9, -9)  
+
+      # US 4 Seam Constants -----------------------------------------------------
+      df[df$gear ==15,c("GEAR","WINGSPREAD","DOORSPREAD", "DOORSURFACE","DOORWGT","NETOPENING","DOORTYPE","SWEEPLNGT", "BUOYANCY","WARPDIA","WARPDEN","WGTGROUNDROPE")] <- data.frame( -9,12.6,33.5,2.2,550,3.7,"PI" ,36.6,-9, -9, -9, -9)  #Doortype should be "PolyIceOval"
+      df[df$gear ==15,c("GEAREXP")] <- 
+      
+
+      
       df$gear <- NULL #by the time we get here, we can delete this field
       return(df)
     }
@@ -226,6 +196,7 @@ HH_Mar <- function(scratch_env = NULL){
   addICESFields<-function(df=NULL){
     # Adopt ICES field names where possible -----------------------------------
     colnames(df)[colnames(df)=="bottom_salinity"] <- "BOTSAL"
+      df$BOTSAL[df$BOTSAL == 0]<- -9                                        #treat salinity of 0 as missing
     colnames(df)[colnames(df)=="bottom_temperature"] <- "BOTTEMP"           #temp already in Cel
     colnames(df)[colnames(df)=="dur"] <- "HAULDUR"                          #already in minutes
     colnames(df)[colnames(df)=="setno"] <- "STNO"
@@ -249,25 +220,31 @@ HH_Mar <- function(scratch_env = NULL){
     df$COUNTRY <- "CA"
     return(df)
   }
+  getDepths<-function(df=NULL){
+    # #grab the depths (in fathoms).  if no value for DEPTH, average dmin and dmax, take the result, and convert to meters
+    df$DEPTH <- NA
+    df$DEPTH <- rowMeans(df[,c("dmin","dmax")], na.rm = F) #first do average
+    if(length(df[!is.na(df$depth),"depth"])>0) df[!is.na(df$depth),"DEPTH"]<- df[!is.na(df$depth),"depth"]
+    df$dmin <- df$dmax <- df$depth <- NULL
+    df$DEPTH <- round2(df$DEPTH,0)
+    return(df)
+  }
+  
   convertUnits <- function(df=NULL){
     # Convert units as necessary ----------------------------------------------
-    df[!is.na(df$warpout),"warpout"]<- round(df[!is.na(df$warpout),"warpout"] * 1.8288,0)          #depth from fathoms to meters (non NA)
-    df[!is.na(df$depth),"depth"]<- round(df[!is.na(df$depth),"depth"] * 1.8288,0)          #depth from fathoms to meters (non NA)
-    # df[!is.na(df$dmin),"dmin"]<- round(df[!is.na(df$dmin),"dmin"] * 1.8288,0)          #dmin from fathoms to meters (non NA)
-    # df[!is.na(df$dmax),"dmax"]<- round(df[!is.na(df$dmax),"dmax"] * 1.8288,0)          #dmax from fathoms to meters (non NA)
-    df[!is.na(df$dist),"dist"]<- round(df[!is.na(df$dist),"dist"] * 1852,0)        #distance from NM to meters (non NA)
-    df[!is.na(df$speed),"speed"]<- round(df[!is.na(df$speed),"speed"],1)
-    colnames(df)[colnames(df)=="warpout"] <- "WARPLNGT"                     #pretty sure it's in meters
-    colnames(df)[colnames(df)=="depth"] <- "DEPTH"    
-    # colnames(df)[colnames(df)=="dmin"] <- "MINTRAWLDEPTH"
-    # colnames(df)[colnames(df)=="dmax"] <- "MAXTRAWLDEPTH"
+    if(length(df[!is.na(df$warpout),"warpout"])>0) df[!is.na(df$warpout),"warpout"]<- round(df[!is.na(df$warpout),"warpout"] * 1.8288,0)          #depth from fathoms to meters (non NA)
+    if(length(df[!is.na(df$dist),"dist"])>0) df[!is.na(df$dist),"dist"]<- round(df[!is.na(df$dist),"dist"] * 1852,0)        #distance from NM to meters (non NA)
+    if(length(df[!is.na(df$speed),"speed"])>0) df[!is.na(df$speed),"speed"]<- round(df[!is.na(df$speed),"speed"],1)
+    colnames(df)[colnames(df)=="warpout"] <- "WARPLNGT"                     #pretty sure it's in meters\
+
+    if(length(df[!is.na(df$DEPTH),"DEPTH"])>0) df[!is.na(df$DEPTH),"DEPTH"] <- round(df[!is.na(df$DEPTH),"DEPTH"]* 1.8288,0)
     colnames(df)[colnames(df)=="dist"] <- "DISTANCE"
     colnames(df)[colnames(df)=="speed"] <- "GROUNDSPEED"
     return(df)
   }
   addSp <- function(df=NULL){
-    df$BYCSPECRECCODE <- 1
-    df[df$YEAR<2005,"BYCSPECRECCODE"]<-6
+    df$BYSPECRECCODE <- 1
+    df[df$YEAR<2005,"BYSPECRECCODE"]<-6
     df$STDSPECRECCODE <- 1                                                      #(https://vocab.ices.dk/?ref=89)                                                    
     #Maybe we can use this to store information related to the changes in species ID over time?
     return(df)
@@ -277,8 +254,9 @@ HH_Mar <- function(scratch_env = NULL){
                'GEAREXP','DOORTYPE','STNO','HAULNO','YEAR','MONTH','DAY',
                'TIMESHOT','DEPTHSTRATUM','HAULDUR','DAYNIGHT','SHOOTLAT',
                'SHOOTLONG','HAULLAT','HAULLONG','STATREC','DEPTH','HAULVAL',
-               'HYDROSTNO','STDSPECRECCODE','BYCSPECRECCODE','DATATYPE',
-               'NETOPENING','RIGGING','TICKLER','DISTANCE','WARPLNGT',
+               'HYDROSTNO','STDSPECRECCODE','BYSPECRECCODE','DATATYPE',
+               'NETOPENING','RIGGING','TICKLER',
+               'DISTANCE','WARPLNGT',
                'WARPDIA','WARPDEN','DOORSURFACE','DOORWGT','DOORSPREAD',
                'WINGSPREAD','BUOYANCY','KITEDIM','WGTGROUNDROPE','TOWDIR',
                'GROUNDSPEED','SPEEDWATER','SURCURDIR','SURCURSPEED',
@@ -295,6 +273,7 @@ HH_Mar <- function(scratch_env = NULL){
   tmp_HH <- addICESFields(tmp_HH)
   tmp_HH <- addICESStrata(tmp_HH)
   tmp_HH <- convertUnits(tmp_HH)
+  tmp_HH <- getDepths(tmp_HH)
   tmp_HH <- addSp(tmp_HH)
   tmp_HH <- finalClean(tmp_HH)
   

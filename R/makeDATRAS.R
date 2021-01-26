@@ -42,6 +42,8 @@
 #' roracle will extract data ~ 5x faster.
 #' @param data.dir  The default is \code{NULL}. Required for Maritimes HH files. This is the path
 #' to your Mar.datawrangling rdata files
+#' @param debug  The default is \code{F}. Setting this to TRUE will limit the 
+#' results to a single set for a single species. 
 #' @return a list containing (named) objects - 1 for each generated HH file
 #' @family DATRAS
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
@@ -52,22 +54,25 @@ makeDATRAS<-function(region = NULL, yr=NULL, season = NULL, csv=T,
                  fn.oracle.password = "_none_",
                  fn.oracle.dsn = "_none_",
                  usepkg = "rodbc",
-                 data.dir = NULL){
+                 data.dir = NULL,
+                 debug =F){
 region <- toupper(region)
+season <- toupper(season)
 good <- c("NFLD", "MAR", "GULF","QUE", "CEN", "PAC")
 if (!region %in% good)stop("Please provide a valid region")
 
 switch(region,
-       "NFLD" = DATRAS_NFLD(yr=yr, season=season,  csv=csv),
-       "MAR" = DATRAS_Mar(yr=yr, season=season,  csv=csv,
+       "NFLD" = NFLD_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
+       "MAR" = Mar_DATRAS(yr=yr, season=season,  csv=csv,
                             fn.oracle.username = fn.oracle.username,
                             fn.oracle.password = fn.oracle.password,
                             fn.oracle.dsn = fn.oracle.dsn,
                             data.dir = data.dir,
-                            usepkg = usepkg),
-       "GULF" = DATRAS_Gulf(yr=yr, season=season,  csv=csv),
-       "QUE" = DATRAS_Que(yr=yr, season=season,  csv=csv),
-       "CEN" = DATRAS_Cen(yr=yr, season=season,  csv=csv),
-       "PAC" = DATRAS_Pac(yr=yr, season=season,  csv=csv)
+                            usepkg = usepkg,
+                            debug = debug),
+       "GULF" = Gulf_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
+       "QUE" = Que_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
+       "CEN" = Cen_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
+       "PAC" = Pac_DATRAS(yr=yr, season=season,  csv=csv, debug = debug)
        )
 }

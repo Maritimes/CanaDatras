@@ -1,4 +1,4 @@
-#' @title CA_Mar
+#' @title Mar_CA
 #' @description This function generates ICES DATRAS-compatible "CA" files 
 #' directly from the Maritimes. "CA" files contain Species age-based information
 #' @param scratch_env default is \code{NULL} This is an environment containing the results of a
@@ -8,7 +8,7 @@
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #' @export
 #'
-CA_Mar <- function(scratch_env = NULL, HL = NULL){
+Mar_CA <- function(scratch_env = NULL, HL = NULL){
   cat("\n","Generating CA... ")
   handleGSDET<-function(){
     addSexCodes <- function(df = NULL){
@@ -140,6 +140,7 @@ if (is.null(GSspecimens)){
 }
 GSDET$AREATYPE <- 27
 colnames(GSDET)[colnames(GSDET)=="FWT"] <- "INDWGT"
+GSDET$INDWGT[GSDET$INDWGT == 0] <- -9 #datras doesn't like values of 0 for wgt
 colnames(GSDET)[colnames(GSDET)=="SIZE_CLASS"] <- "CATIDENTIFIER"
 # df$AreaCode <- theMarStrata
 # df$LngtCode #<- colnames(GSSPEC)[colnames(GSSPEC)=="LGRP"] <- "LNGTCODE"
@@ -167,11 +168,24 @@ getNoMeas <- function(df=NULL){
 }
 
 
-GSDET=merge(GSDET, unique(HL[,c("SPEC","LNGTCODE")]), all.x=T)
-GSDET$LNGTCLASS<- ceiling(GSDET$FLEN/GSDET$LNGTCODE) * GSDET$LNGTCODE
-
+tmp_HL <-unique(HL[,c("mission","STNO","SPEC","SEX","LNGTCLASS","LNGTCODE")])
+# GSDET=merge(GSDET, unique(HL[,c("SPEC","LNGTCODE" )]), all.x=T)
+forAgg <- unique(GSDET[,c("mission","STNO","SPEC","SEX","MATURITY", "AGERINGS")])
+GSDET=merge(forAgg, tmp_HL, all.x=T, by.x=c("mission","STNO","SPEC","SEX"), by.y=c("mission","STNO","SPEC","SEX"))
 GSDET[is.na(GSDET)]<- -9
-GSDET_agg <- getNoMeas(GSDET[,c("mission","STNO","SPEC","LNGTCLASS","SEX", "MATURITY", "AGERINGS")])
+GSDET_agg= unique(as.data.frame(as.list(stats::aggregate(
+  x = list(CANOATLNGT = GSDET$mission),
+  by = list(SPEC = GSDET$SPEC,
+            mission = GSDET$mission,
+            STNO = GSDET$STNO,
+            LNGTCLASS = GSDET$LNGTCLASS,
+            SEX = GSDET$SEX,
+            MATURITY = GSDET$MATURITY,
+            AGERINGS = GSDET$AGERINGS
+  ),
+  length
+))))
+
 GSDET = merge(GSDET, GSDET_agg, by = c("mission","STNO","SPEC","LNGTCLASS","SEX", "MATURITY", "AGERINGS"))
 
 GSDET$SPECIMEN_ID<- GSDET$FSHNO<- GSDET$CLEN<- GSDET$DEVSTAGE<-GSDET$FLEN<-GSDET$AGE <- NULL
