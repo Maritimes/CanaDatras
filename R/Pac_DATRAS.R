@@ -13,7 +13,7 @@
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #' @export
 #'
-Pac_DATRAS <- function(yr=NULL, season=NULL, csv = NULL){
+Pac_DATRAS <- function(yr=NULL, season=NULL, csv = NULL, debug=FALSE){
   cat("\n","Pac not implemented yet")
   return(NULL)
 }

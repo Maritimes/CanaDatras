@@ -99,7 +99,7 @@ Mar_HL <- function(scratch_env = NULL){
   # forAgg$LNGTCLASS<- ceiling(forAgg$FLEN/forAgg$LNGTCODE) * forAgg$LNGTCODE
   forAgg$FLEN<-NULL
   
-  tmp_CATCATCHWGT <- aggregate(
+  tmp_CATCATCHWGT <- stats::aggregate(
     x = list(CATCATCHWGT = forAgg$FWT),
     by = list(SPEC = forAgg$SPEC,
               MISSION = forAgg$MISSION,
@@ -110,7 +110,7 @@ Mar_HL <- function(scratch_env = NULL){
     sum
   )
   tmp_CATCATCHWGT$CATCATCHWGT <- round2(tmp_CATCATCHWGT$CATCATCHWGT,0)
-  tmp_HLNOATLNGT <- aggregate(
+  tmp_HLNOATLNGT <- stats::aggregate(
     x = list(HLNOATLNGT = forAgg$LNGTCLASS),
     by = list(SPEC = forAgg$SPEC,
               MISSION = forAgg$MISSION,

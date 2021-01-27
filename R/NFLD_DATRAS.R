@@ -13,7 +13,7 @@
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #' @export
 #'
-NFLD_DATRAS <- function(yr=NULL, season=NULL, csv = NULL){
+NFLD_DATRAS <- function(yr=NULL, season=NULL, csv = NULL, debug=FALSE){
   cat("\n","NFLD not implemented yet")
   return(NULL)
 }

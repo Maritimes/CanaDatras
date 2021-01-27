@@ -13,7 +13,7 @@
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #' @export
 #'
-Gulf_DATRAS <- function(yr=NULL, season=NULL, csv = NULL){
+Gulf_DATRAS <- function(yr=NULL, season=NULL, csv = NULL, debug=FALSE){
   cat("\n","Gulf not implemented yet")
   return(NULL)
 }

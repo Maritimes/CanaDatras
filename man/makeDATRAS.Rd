@@ -13,7 +13,8 @@ makeDATRAS(
   fn.oracle.password = "_none_",
   fn.oracle.dsn = "_none_",
   usepkg = "rodbc",
-  data.dir = NULL
+  data.dir = NULL,
+  debug = F
 )
 }
 \arguments{
@@ -67,6 +68,9 @@ roracle will extract data ~ 5x faster.}
 
 \item{data.dir}{The default is \code{NULL}. Required for Maritimes HH files. This is the path
 to your Mar.datawrangling rdata files}
+
+\item{debug}{The default is \code{F}. Setting this to TRUE will limit the 
+results to a single set for a single species.}
 }
 \value{
 a list containing (named) objects - 1 for each generated HH file
@@ -76,15 +80,15 @@ This function generates ICES DATRAS-compatible HH for a particular DFO region.
 }
 \seealso{
 Other DATRAS: 
-\code{\link{CA_Mar}()},
-\code{\link{DATRAS_Cen}()},
-\code{\link{DATRAS_Gulf}()},
-\code{\link{DATRAS_Mar}()},
-\code{\link{DATRAS_NFLD}()},
-\code{\link{DATRAS_Pac}()},
-\code{\link{DATRAS_Que}()},
-\code{\link{HH_Mar}()},
-\code{\link{HL_Mar}()}
+\code{\link{Cen_DATRAS}()},
+\code{\link{Gulf_DATRAS}()},
+\code{\link{Mar_CA}()},
+\code{\link{Mar_DATRAS}()},
+\code{\link{Mar_HH}()},
+\code{\link{Mar_HL}()},
+\code{\link{NFLD_DATRAS}()},
+\code{\link{Pac_DATRAS}()},
+\code{\link{Que_DATRAS}()}
 }
 \author{
 Mike McMahon, \email{Mike.McMahon@dfo-mpo.gc.ca}

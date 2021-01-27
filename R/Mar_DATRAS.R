@@ -187,7 +187,7 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
       tmp_CA<-tmp_CA[,ord_CA]
       if (debug){
         cat("Just getting 1 set and 1 species","\n")
-        CAsp =aggregate(tmp_CA$SPECCODE,
+        CAsp =stats::aggregate(tmp_CA$SPECCODE,
                         by = list(
                           STNO = tmp_CA$STNO,
                           SPECCODE = tmp_CA$SPECCODE

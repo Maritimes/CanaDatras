@@ -13,7 +13,7 @@
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #' @export
 #'
-Cen_DATRAS <- function(yr=NULL, season=NULL, csv = NULL){
+Cen_DATRAS <- function(yr=NULL, season=NULL, csv = NULL, debug=FALSE){
   cat("\n","Cen not implemented yet")
   return(NULL)
 }
