@@ -10,15 +10,7 @@
 #'  @export
 Mar_HH <- function(scratch_env = NULL){
   cat("\n","Generating HH...")
-  round2 = function(x, n) {
-    #this function ensures that values ending in 0.5 are round up to teh next integer - not down to zero (R's default)
-    posneg = sign(x)
-    z = abs(x)*10^n
-    z = z + 0.5 + sqrt(.Machine$double.eps)
-    z = trunc(z)
-    z = z/10^n
-    z*posneg
-  }
+
   
   df= merge(scratch_env$GSINF, scratch_env$GSMISSIONS, all.x = T)
   df = merge(df, scratch_env$GSWARPOUT, all.x=T)

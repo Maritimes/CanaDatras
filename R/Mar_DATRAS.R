@@ -116,7 +116,7 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
     allBad <- unique(c(badSpp1, badSpp2))
 
      if (length(allBad)>0){
-       cat("\n!!!\n","The following 'species' were present, but don't have AphiaIDs in the GRUNDFISH.GSSPECIES_CODES table.","\n"," Until they do, they can't be included in DATRAS submissions and will be dropped:","\n")
+       cat("\n!!!\n","The following 'species' were present, but don't have AphiaIDs in the GROUNDFISH.GSSPECIES_CODES table.","\n"," Until they do, they can't be included in DATRAS submissions and will be dropped:","\n")
        print(scratch_env$GSSPECIES[scratch_env$GSSPECIES$CODE %in% allBad, c("CODE", "COMM", "SPEC")])
        cat("\n!!!")
        scratch_env$GSSPECIES<-scratch_env$GSSPECIES[!(scratch_env$GSSPECIES$CODE %in% allBad),]
@@ -150,7 +150,7 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
                     tmp_HL, all.y = T, by.x=c("mission", "STNO"), by.y=c("MISSION","SETNO"))
       tmp_HL$RECORDTYPE <- "HL"
       
-      tmp_CA <- Mar_CA(scratch_env = tmp_env, HL = tmp_HL)
+      tmp_CA <- Mar_CA(scratch_env = tmp_env)
       tmp_CA<-merge(tmp_HH[,c("mission","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT","GEAREXP","DOORTYPE","STNO","HAULNO","YEAR","DEPTHSTRATUM")], tmp_CA, all.y = T)
       
       tmp_HL$LNGTCODE <- as.character(tmp_HL$LNGTCODE) 
@@ -204,9 +204,9 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
       colnames(tmp_HH)[colnames(tmp_HH)=="GEAREXP"] <- "GEAREX"
       if(csv){
         theFile <- file.create(fullnm)
-        utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ",")
-        utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ",", append = T) 
-        utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ",", append = T)
+        suppressWarnings(utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ","))
+        suppressWarnings(utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ",", append = T))
+        suppressWarnings(utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ",", append = T))
         if (debug){
           utils::write.csv(x = tmp_HH, file = paste0(fullnm,"_HH_debug.csv"), row.names = F)
           utils::write.csv(x = tmp_HL, file = paste0(fullnm,"_HL_debug.csv"), row.names = F) 
