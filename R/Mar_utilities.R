@@ -13,7 +13,6 @@ addLenMeasInfo <- function(df = NULL){
   #set LNGTCODE to 1cm for all, then overwrite weirdies
   df$LENMEASTYPE <- 2
   df$LNGTCODE <- 1
-  
   #crabs -     7 "Carapace Width"; in mm
   df[(df$SPEC >= 2506 & df$SPEC <= 2547) | df$SPEC == 6006,c("LENMEASTYPE", "LNGTCODE")]<-data.frame(7,0.1)
   #lobsters -  6 "Carapace Length"; mm
