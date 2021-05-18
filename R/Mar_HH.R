@@ -208,7 +208,7 @@ Mar_HH <- function(scratch_env = NULL){
     df$THCLINEDEPTH <- -9
     df$DATATYPE <- 'R'
     df$RECORDTYPE <- "HH"
-    #df$SURVEY <- "CAN-MAR"    #make up a ficticious survey name
+    #df$SURVEY <- "Can-Mar"    #make up a ficticious survey name
     df$COUNTRY <- "CA"
     return(df)
   }

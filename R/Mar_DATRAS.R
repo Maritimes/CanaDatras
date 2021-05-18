@@ -204,9 +204,9 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
       colnames(tmp_HH)[colnames(tmp_HH)=="GEAREXP"] <- "GEAREX"
       if(csv){
         theFile <- file.create(fullnm)
-        suppressWarnings(utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ","))
-        suppressWarnings(utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ",", append = T))
-        suppressWarnings(utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = TRUE, quote = FALSE, sep = ",", append = T))
+        suppressWarnings(utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = F, quote = FALSE, sep = ","))
+        suppressWarnings(utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
+        suppressWarnings(utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
         if (debug){
           utils::write.csv(x = tmp_HH, file = paste0(fullnm,"_HH_debug.csv"), row.names = F)
           utils::write.csv(x = tmp_HL, file = paste0(fullnm,"_HL_debug.csv"), row.names = F) 
