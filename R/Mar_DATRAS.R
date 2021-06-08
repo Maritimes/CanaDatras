@@ -66,12 +66,12 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
               "TURBIDITY","TIDEPHASE","TIDESPEED","PELSAMPTYPE", 
               "MINTRAWLDEPTH","MAXTRAWLDEPTH")
   ord_HL <- c("RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT", 
-              "DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE", 
+              "GEAREXP", "DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE", 
               "SPECCODE","SPECVAL","SEX","TOTALNO","CATIDENTIFIER","NOMEAS",
               "SUBFACTOR","SUBWGT","CATCATCHWGT","LNGTCODE","LNGTCLASS",
               "HLNOATLNGT","DEVSTAGE","LENMEASTYPE") #"GEAREXP",
   ord_CA <- c("RECORDTYPE", "QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT",
-              "DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE",
+              "GEAREXP","DOORTYPE","STNO","HAULNO","YEAR","SPECCODETYPE",
               "SPECCODE","AREATYPE","AREACODE","LNGTCODE","LNGTCLASS","SEX",
               "MATURITY","PLUSGR","AGERINGS","CANOATLNGT","INDWGT",
               "MATURITYSCALE","FISHID","GENSAMP","STOMSAMP","AGESOURCE",
@@ -114,11 +114,11 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
     badSpp1 <- unique(scratch_env$GSCAT[scratch_env$GSCAT$SPEC %in% unkSpp$CODE,"SPEC"])
     badSpp2 <- unique(scratch_env$GSDET[scratch_env$GSDET$SPEC %in% unkSpp$CODE,"SPEC"])
     allBad <- unique(c(badSpp1, badSpp2))
-
      if (length(allBad)>0){
-       cat("\n!!!\n","The following 'species' were present, but don't have AphiaIDs in the GROUNDFISH.GSSPECIES_CODES table.","\n"," Until they do, they can't be included in DATRAS submissions and will be dropped:","\n")
-       print(scratch_env$GSSPECIES[scratch_env$GSSPECIES$CODE %in% allBad, c("CODE", "COMM", "SPEC")])
-       cat("\n!!!")
+       fullnmSpp <- gsub(".csv", "_sppMissing.csv", fullnm)
+       theSppFile <- file.create(fullnmSpp)
+       suppressWarnings(utils::write.table(x = scratch_env$GSSPECIES[scratch_env$GSSPECIES$CODE %in% allBad, c("CODE", "COMM", "SPEC")], file = fullnmSpp, row.names = F, col.names = T, quote = FALSE, sep = ","))
+       message("\nA file was generated containing species names reported in the catch that don't have aphiaids (", fullnmSpp,")")
        scratch_env$GSSPECIES<-scratch_env$GSSPECIES[!(scratch_env$GSSPECIES$CODE %in% allBad),]
        scratch_env$GSCAT<-scratch_env$GSCAT[!(scratch_env$GSCAT$SPEC %in% allBad),]
        scratch_env$GSDET<-scratch_env$GSDET[!(scratch_env$GSDET$SPEC %in% allBad),]
@@ -157,7 +157,10 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
       tmp_HL$LNGTCODE <- gsub('0.1', '.', tmp_HL$LNGTCODE)
       tmp_CA$LNGTCODE <- as.character(tmp_CA$LNGTCODE) 
       tmp_CA$LNGTCODE <- gsub('0.1', '.', tmp_CA$LNGTCODE)
-      
+      badTows <- tmp_HH[tmp_HH$HAULVAL == "I","HAULNO"]
+      if (length(badTows)>0){
+        tmp_HL[tmp_HL$HAULNO %in% badTows,"SPECVAL"] <-0
+      }
       colnames(tmp_CA)[colnames(tmp_CA)=="DEPTHSTRATUM"] <- "AREACODE"
       tmp_CA[is.na(tmp_CA)]<- -9
       SPP <- sort(unique(c(unique(scratch_env$GSCAT$SPEC), unique(scratch_env$GSDET$SPEC))))
@@ -202,6 +205,7 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
       }
       
       colnames(tmp_HH)[colnames(tmp_HH)=="GEAREXP"] <- "GEAREX"
+      colnames(tmp_HL)[colnames(tmp_HL)=="GEAREXP"] <- "GEAREX"
       if(csv){
         theFile <- file.create(fullnm)
         suppressWarnings(utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = F, quote = FALSE, sep = ","))
@@ -212,7 +216,7 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
           utils::write.csv(x = tmp_HL, file = paste0(fullnm,"_HL_debug.csv"), row.names = F) 
           utils::write.csv(x = tmp_CA, file = paste0(fullnm,"_CA_debug.csv"), row.names = F)
         }
-        cat("\n","File written to", getwd(),"/", fullnm)
+        cat("\n",paste0("File written to", getwd(),"/", fullnm))
       }
       thisyr <- list(HH = tmp_HH, HL = tmp_HL, CA = tmp_CA)
       results[[nm]]<-thisyr

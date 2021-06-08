@@ -150,7 +150,6 @@ Mar_HL <- function(scratch_env = NULL){
   tmp_HL3$SPECVAL <- ifelse(tmp_HL3$TYPE == 3, 0,
                           ifelse(tmp_HL3$LNGTCLASS == -9, 7,
                               ifelse(tmp_HL3$TOTALNO <= 0 & tmp_HL3$TOTWGT >0 , 6, 1)))
-  
   tmp_HL3$TOTWGT<-tmp_HL3$TYPE <- NULL
   tmp_HL3[which(tmp_HL3$CATCATCHWGT == 0),"CATCATCHWGT"] <- -9
   tmp_HL3[is.na(tmp_HL3)]<- -9 #catch all to turn all NAs to -9
