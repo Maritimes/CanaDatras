@@ -14,12 +14,16 @@ Mar_HH <- function(scratch_env = NULL){
   
   df= merge(scratch_env$GSINF, scratch_env$GSMISSIONS, all.x = T)
   df = merge(df, scratch_env$GSWARPOUT, all.x=T)
+  df = df[with(df,order(SDATE)),]
+  df$haulno <- seq(1:nrow(df))
   #' drop unneeded fields, and make original cols lowercase - finals will be uppercase
   df = df[,c("MISSION","BOTTOM_SALINITY","BOTTOM_TEMPERATURE","SDATE",
              "DEPTH","DMIN", "DMAX", "DIST","GEAR","DUR","SETNO","TYPE","LATITUDE",
              "LONGITUDE", "ELATITUDE", "ELONGITUDE", "STRAT", "CURNT",
-             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT", "VESEL", "YEAR", "SEASON" )]  #,"DMIN","DMAX")]
+             "SURFACE_TEMPERATURE","TIME","WIND","FORCE","SPEED", "WARPOUT", "VESEL", "YEAR", "SEASON", "haulno" )]  #,"DMIN","DMAX")]
   names(df) <- tolower(names(df))
+  df$HAULNO <- df$haulno
+  df$haulno <- NULL
   calcValues<-function(df=NULL){
     # Define some functions
     processTimes<-function(df=NULL){
@@ -192,7 +196,7 @@ Mar_HH <- function(scratch_env = NULL){
     colnames(df)[colnames(df)=="bottom_temperature"] <- "BOTTEMP"           #temp already in Cel
     colnames(df)[colnames(df)=="dur"] <- "HAULDUR"                          #already in minutes
     colnames(df)[colnames(df)=="setno"] <- "STNO"
-    df$HAULNO <- df$STNO                                                    #ICES has STNO and HAULNO - examples show them as same
+    # df$HAULNO <- df$STNO                                                    #ICES has STNO and HAULNO - examples show them as same
     colnames(df)[colnames(df)=="strat"] <- "STRATUM"
     colnames(df)[colnames(df)=="surface_temperature"] <- "SURTEMP"
     # Populate other required fields ------------------------------------------
