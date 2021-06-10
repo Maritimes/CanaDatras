@@ -4,13 +4,13 @@
 \alias{Gulf_DATRAS}
 \title{Gulf_DATRAS}
 \usage{
-Gulf_DATRAS(yr = NULL, season = NULL, csv = NULL, debug = FALSE)
+Gulf_DATRAS(yr = NULL, survey = NULL, csv = NULL, debug = FALSE)
 }
 \arguments{
 \item{yr}{default is \code{NULL}. This specifies the year(s) for which you'd like to generate
 HH files. Single years are fine, as are vectors (e.g. \code{c(2011,1015)}, \code{2015:2019})}
 
-\item{season}{default is \code{NULL}.}
+\item{survey}{default is \code{NULL}.}
 
 \item{csv}{default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.  If
 \code{FALSE}, the output exists only in the resultant list.}

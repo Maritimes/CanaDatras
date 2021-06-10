@@ -3,7 +3,7 @@
 #' ICES DATRAS-compatible files for Central region.
 #' @param yr default is \code{NULL}. This specifies the year(s) for which you'd like to generate
 #' HH files. Single years are fine, as are vectors (e.g. \code{c(2011,1015)}, \code{2015:2019})
-#' @param season default is \code{NULL}.
+#' @param survey default is \code{NULL}.
 #' @param csv default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.  If
 #' \code{FALSE}, the output exists only in the resultant list.
 #' @param debug  The default is \code{F}. Setting this to TRUE will limit the 
@@ -13,7 +13,7 @@
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #' @export
 #'
-Cen_DATRAS <- function(yr=NULL, season=NULL, csv = NULL, debug=FALSE){
+Cen_DATRAS <- function(yr=NULL, survey=NULL, csv = NULL, debug=FALSE){
   cat("\n","Cen not implemented yet")
   return(NULL)
 }

@@ -7,7 +7,7 @@
 makeDATRAS(
   region = NULL,
   yr = NULL,
-  season = NULL,
+  survey = NULL,
   csv = T,
   fn.oracle.username = "_none_",
   fn.oracle.password = "_none_",
@@ -32,12 +32,12 @@ make the DATRAS files.  Valid regions are listed below, but initially, only "Mar
 \item{yr}{default is \code{NULL}. This specifies the year(s) for which you'd like to generate
 HH files. Single years are fine, as are vectors (e.g. \code{c(2011,1015)}, \code{2015:2019})}
 
-\item{season}{default is \code{NULL}. This specifies the season(s) for which you'd like to generate
-HH files.  Valid values are
+\item{survey}{default is \code{NULL}. This specifies the survey for which you'd like to generate
+HH files.  This will be specific to the different regions.  Valid values for Maritimes are
 \itemize{
-\item \code{"SPRING"} i.e. Jan, Feb, Mar, Apr
-\item \code{"SUMMER"} i.e. May, Jun, Jul, Aug
-\item \code{"FALL"} i.e. Sep, Oct, Nov Dec
+\item \code{"4VSW"}    Types 1 & 3; Jan - April (inclusive); Strata 396:411
+\item \code{"SUMMER"}  Types 1 & 3; May - August (inclusive)
+\item \code{"GEORGES"} Types 1 & 3; Jan - April (inclusive); != Strata 396:411
 }}
 
 \item{csv}{default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.

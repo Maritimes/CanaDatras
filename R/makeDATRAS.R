@@ -12,12 +12,12 @@
 #' }
 #' @param yr default is \code{NULL}. This specifies the year(s) for which you'd like to generate
 #' HH files. Single years are fine, as are vectors (e.g. \code{c(2011,1015)}, \code{2015:2019})
-#' @param season default is \code{NULL}. This specifies the season(s) for which you'd like to generate
-#' HH files.  Valid values are
+#' @param survey default is \code{NULL}. This specifies the survey for which you'd like to generate
+#' HH files.  This will be specific to the different regions.  Valid values for Maritimes are
 #' \itemize{
-#' \item \code{"SPRING"} i.e. Jan, Feb, Mar, Apr
-#' \item \code{"SUMMER"} i.e. May, Jun, Jul, Aug
-#' \item \code{"FALL"} i.e. Sep, Oct, Nov Dec
+#' \item \code{"4VSW"}    Types 1 & 3; Jan - April (inclusive); Strata 396:411
+#' \item \code{"SUMMER"}  Types 1 & 3; May - August (inclusive)
+#' \item \code{"GEORGES"} Types 1 & 3; Jan - April (inclusive); != Strata 396:411
 #' }
 #' @param csv default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.
 #' If \code{FALSE}, the output exists only in the resultant list.
@@ -49,7 +49,7 @@
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #' @export
 #'
-makeDATRAS<-function(region = NULL, yr=NULL, season = NULL, csv=T,
+makeDATRAS<-function(region = NULL, yr=NULL, survey = NULL, csv=T,
                  fn.oracle.username = "_none_",
                  fn.oracle.password = "_none_",
                  fn.oracle.dsn = "_none_",
@@ -57,22 +57,22 @@ makeDATRAS<-function(region = NULL, yr=NULL, season = NULL, csv=T,
                  data.dir = NULL,
                  debug =F){
 region <- toupper(region)
-season <- toupper(season)
+survey <- toupper(survey)
 good <- c("NFLD", "MAR", "GULF","QUE", "CEN", "PAC")
 if (!region %in% good)stop("Please provide a valid region")
 
 switch(region,
-       "NFLD" = NFLD_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
-       "MAR" = Mar_DATRAS(yr=yr, season=season,  csv=csv,
+       "NFLD" = NFLD_DATRAS(yr=yr, survey=survey,  csv=csv, debug = debug),
+       "MAR" = Mar_DATRAS(yr=yr, survey=survey,  csv=csv,
                             fn.oracle.username = fn.oracle.username,
                             fn.oracle.password = fn.oracle.password,
                             fn.oracle.dsn = fn.oracle.dsn,
                             data.dir = data.dir,
                             usepkg = usepkg,
                             debug = debug),
-       "GULF" = Gulf_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
-       "QUE" = Que_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
-       "CEN" = Cen_DATRAS(yr=yr, season=season,  csv=csv, debug = debug),
-       "PAC" = Pac_DATRAS(yr=yr, season=season,  csv=csv, debug = debug)
+       "GULF" = Gulf_DATRAS(yr=yr, survey=survey,  csv=csv, debug = debug),
+       "QUE" = Que_DATRAS(yr=yr, survey=survey,  csv=csv, debug = debug),
+       "CEN" = Cen_DATRAS(yr=yr, survey=survey,  csv=csv, debug = debug),
+       "PAC" = Pac_DATRAS(yr=yr, survey=survey,  csv=csv, debug = debug)
        )
 }

@@ -6,7 +6,7 @@
 \usage{
 Mar_DATRAS(
   yr = NULL,
-  season = NULL,
+  survey = NULL,
   csv = T,
   fn.oracle.username = "_none_",
   fn.oracle.password = "_none_",
@@ -19,14 +19,6 @@ Mar_DATRAS(
 \arguments{
 \item{yr}{default is \code{NULL}. This specifies the year(s) for which you'd like to generate
 HH files. Single years are fine, as are vectors (e.g. \code{c(2011,1015)}, \code{2015:2019})}
-
-\item{season}{default is \code{NULL}. This specifies the season(s) for which you'd like to generate
-HH files.  Valid values are
-\itemize{
-\item \code{"SPRING"} i.e. Jan, Feb, Mar, Apr
-\item \code{"SUMMER"} i.e. May, Jun, Jul, Aug
-\item \code{"FALL"} i.e. Sep, Oct, Nov Dec
-}}
 
 \item{csv}{default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.  If
 \code{FALSE}, the output exists only in the resultant list.}
@@ -58,6 +50,14 @@ rdata files}
 
 \item{debug}{The default is \code{F}. Setting this to TRUE will limit the 
 results to a single set for a single species.}
+
+\item{season}{default is \code{NULL}. This specifies the season(s) for which you'd like to generate
+HH files.  Valid values are
+\itemize{
+\item \code{"SPRING"} i.e. Jan, Feb, Mar, Apr
+\item \code{"SUMMER"} i.e. May, Jun, Jul, Aug
+\item \code{"FALL"} i.e. Sep, Oct, Nov Dec
+}}
 }
 \value{
 a list containing (named) objects - 1 for each generated HH file

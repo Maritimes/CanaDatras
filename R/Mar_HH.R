@@ -159,11 +159,11 @@ Mar_HH <- function(scratch_env = NULL){
       df[df$gear ==9 & df$YEAR >= 2007, c("SWEEPLNGT","BUOYANCY")] <-data.frame(round(33.8328,0), round(199.68))
       
       # Yankee 36 Constants -----------------------------------------------------
-      df[df$gear ==3,c("GEAR","WINGSPREAD","DOORSPREAD", "DOORSURFACE","DOORWGT","NETOPENING","DOORTYPE","SWEEPLNGT", "BUOYANCY","WARPDIA","WARPDEN","WGTGROUNDROPE")] <- data.frame( -9,10.7,36.6,2.9,450,2.7,"WR", 36.6, 97.58, 20, -9, -9)  
+      df[df$gear ==3,c("GEAR","WINGSPREAD","DOORSPREAD", "DOORSURFACE","DOORWGT","NETOPENING","DOORTYPE","SWEEPLNGT", "BUOYANCY","WARPDIA","WARPDEN","WGTGROUNDROPE")] <- data.frame( "Y36",10.7,36.6,2.9,450,2.7,"WR", 36.6, 97.58, 20, -9, -9)  
 
       # US 4 Seam Constants -----------------------------------------------------
-      df[df$gear ==15,c("GEAR","WINGSPREAD","DOORSPREAD", "DOORSURFACE","DOORWGT","NETOPENING","DOORTYPE","SWEEPLNGT", "BUOYANCY","WARPDIA","WARPDEN","WGTGROUNDROPE")] <- data.frame( -9,12.6,33.5,2.2,550,3.7,"PI" ,36.6,-9, -9, -9, -9)  #Doortype should be "PolyIceOval"
-      df[df$gear ==15,c("GEAREXP")] <- 
+      df[df$gear ==15,c("GEAR","WINGSPREAD","DOORSPREAD", "DOORSURFACE","DOORWGT","NETOPENING","DOORTYPE","SWEEPLNGT", "BUOYANCY","WARPDIA","WARPDEN","WGTGROUNDROPE")] <- data.frame( "US4",12.6,33.5,2.2,550,3.7,"PI" ,36.6,-9, -9, -9, -9)  #Doortype should be "PolyIceOval"
+
       
 
       
