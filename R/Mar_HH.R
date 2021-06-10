@@ -33,7 +33,9 @@ Mar_HH <- function(scratch_env = NULL){
       df$DAY<-lubridate::day(df$sdate)
       df$HOUR <- as.integer(substr(sprintf('%04d',df$time),1,2))
       df$MIN <- as.integer(substr(sprintf('%04d',df$time),3,4))
-      df$DATETIME = lubridate::make_datetime(year = df$YEAR, month = df$MONTH, day = df$DAY, hour =df$HOUR, min = df$MIN, sec=0, tz = "Canada/Atlantic")
+      df$DATETIME <- lubridate::make_datetime(year = df$YEAR, month = df$MONTH, day = df$DAY, hour =df$HOUR, min = df$MIN, sec=0, tz = "Canada/Atlantic")
+      #line below added iin response to encountering case where reported time happened EXACTLT at start of daylight savings time
+      df[is.na(df$DATETIME),"DATETIME"] <- lubridate::make_datetime(year = df[is.na(df$DATETIME),"YEAR"], month = df[is.na(df$DATETIME),"MONTH"], day = df[is.na(df$DATETIME),"DAY"], hour =df[is.na(df$DATETIME),"HOUR"]+1, min = df[is.na(df$DATETIME),"MIN"], sec=0, tz = "Canada/Atlantic")
       df$QUARTER<-lubridate::quarter(df$DATETIME)
       df$TIMESHOT<-sprintf('%04d',df$time)
       df$sdate <- NULL

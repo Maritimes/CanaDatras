@@ -139,8 +139,15 @@ Mar_DATRAS <- function(yr=NULL, season=NULL, csv =T,
                         fn.oracle.dsn = fn.oracle.dsn,
                         data.dir = data.dir,
                         usepkg = usepkg)
-      
+
       #convert gscat values to grams (gsdet already in g)
+      if (nrow(tmp_env$GSINF)==0){
+        message("\nNo data found matching parameters")
+        theFile <- file.create(fullnm)
+        results[[nm]]<-NA
+        utils::write.csv(x = NA, file = paste0(fullnm,"_noResults.csv"), row.names = F)
+        next
+      }
       tmp_env$GSCAT$SAMPWGT <- tmp_env$GSCAT$SAMPWGT*1000
       tmp_env$GSCAT$TOTWGT <- tmp_env$GSCAT$TOTWGT*1000
       
