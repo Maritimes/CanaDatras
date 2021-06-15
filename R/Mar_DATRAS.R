@@ -6,9 +6,12 @@
 #' @param survey default is \code{NULL}. This specifies the survey(s) for which you'd like to generate
 #' HH files.  Valid values are
 #' \itemize{
-#' \item \code{"SPRING"} i.e. Jan, Feb, Mar, Apr
-#' \item \code{"SUMMER"} i.e. May, Jun, Jul, Aug
-#' \item \code{"FALL"} i.e. Sep, Oct, Nov Dec
+#' \item \code{4X} - Type 1; Spring (i.e. months 1:4); 2008+; not strata 5Z* 
+#' \item \code{GEORGES} - Type 1; Spring (i.e. months 1:4);  2008+; strata 5Z*
+#' \item \code{SPRING} - Type 1; Spring (i.e. months 1:4); pre-2008; specific strata 
+#' \item \code{4VSW}  - Type 1; Spring (i.e. months 1:4); 4VSW strata;  
+#' \item \code{SUMMER} - Type 1; Summer (i.e. months 5:8); specific strata
+#' \item \code{FALL} - Type 1; Fall (i.e. months 9:12)
 #' }
 #' @param csv default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.  If
 #' \code{FALSE}, the output exists only in the resultant list.
@@ -47,7 +50,7 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
                        usepkg = "rodbc",
                        data.dir = NULL,
                        debug = debug){
-
+  
   timestamp<-format(Sys.time(), "%Y%m%d_%H%M")
   Sys.setenv(TZ = "America/Halifax")
   scratch_env = new.env()
@@ -104,19 +107,19 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
     badSpp1 <- unique(scratch_env$GSCAT[scratch_env$GSCAT$SPEC %in% unkSpp$CODE,"SPEC"])
     badSpp2 <- unique(scratch_env$GSDET[scratch_env$GSDET$SPEC %in% unkSpp$CODE,"SPEC"])
     allBad <- unique(c(badSpp1, badSpp2))
-     if (length(allBad)>0){
-       fullnmSpp <- gsub(".csv", "_sppMissing.csv", fullnm)
-       theSppFile <- file.create(fullnmSpp)
-       suppressWarnings(utils::write.table(x = scratch_env$GSSPECIES[scratch_env$GSSPECIES$CODE %in% allBad, c("CODE", "COMM", "SPEC")], file = fullnmSpp, row.names = F, col.names = T, quote = FALSE, sep = ","))
-       message("\nA file was generated containing species names reported in the catch that don't have aphiaids (", fullnmSpp,")")
-       scratch_env$GSSPECIES<-scratch_env$GSSPECIES[!(scratch_env$GSSPECIES$CODE %in% allBad),]
-       scratch_env$GSCAT<-scratch_env$GSCAT[!(scratch_env$GSCAT$SPEC %in% allBad),]
-       scratch_env$GSDET<-scratch_env$GSDET[!(scratch_env$GSDET$SPEC %in% allBad),]
-       Mar.datawrangling::self_filter(keep_nullsets = T, env = scratch_env, quiet = T)
-     }
+    if (length(allBad)>0){
+      fullnmSpp <- gsub(".csv", "_sppMissing.csv", fullnm)
+      theSppFile <- file.create(fullnmSpp)
+      suppressWarnings(utils::write.table(x = scratch_env$GSSPECIES[scratch_env$GSSPECIES$CODE %in% allBad, c("CODE", "COMM", "SPEC")], file = fullnmSpp, row.names = F, col.names = T, quote = FALSE, sep = ","))
+      message("\nA file was generated containing species names reported in the catch that don't have aphiaids (", fullnmSpp,")")
+      scratch_env$GSSPECIES<-scratch_env$GSSPECIES[!(scratch_env$GSSPECIES$CODE %in% allBad),]
+      scratch_env$GSCAT<-scratch_env$GSCAT[!(scratch_env$GSCAT$SPEC %in% allBad),]
+      scratch_env$GSDET<-scratch_env$GSDET[!(scratch_env$GSDET$SPEC %in% allBad),]
+      Mar.datawrangling::self_filter(keep_nullsets = T, env = scratch_env, quiet = T)
+    }
     return(scratch_env)
   }
-
+  
   # Get all of the requested data
   for (y in 1:length(yr)){
     for (s in 1:length(survey)){
@@ -129,7 +132,7 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
                         fn.oracle.dsn = fn.oracle.dsn,
                         data.dir = data.dir,
                         usepkg = usepkg)
-
+      
       #convert gscat values to grams (gsdet already in g)
       if (nrow(tmp_env$GSINF)==0){
         message("\nNo data found matching parameters")
@@ -141,7 +144,7 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
       tmp_env$GSCAT$SAMPWGT <- tmp_env$GSCAT$SAMPWGT*1000
       tmp_env$GSCAT$TOTWGT <- tmp_env$GSCAT$TOTWGT*1000
       
-      tmp_HH <- Mar_HH(scratch_env = tmp_env)
+      tmp_HH <- Mar_HH(scratch_env = tmp_env, survey = survey)
       tmp_HL <- Mar_HL(scratch_env = tmp_env)
       tmp_HL<-merge(tmp_HH[,c("mission","RECORDTYPE","QUARTER","COUNTRY","SHIP","GEAR","SWEEPLNGT","GEAREXP","DOORTYPE","STNO","HAULNO","YEAR")],
                     tmp_HL, all.y = T, by.x=c("mission", "STNO"), by.y=c("MISSION","SETNO"))
@@ -188,11 +191,11 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
       if (debug){
         cat("Just getting 1 set and 1 species","\n")
         CAsp =stats::aggregate(tmp_CA$SPECCODE,
-                        by = list(
-                          STNO = tmp_CA$STNO,
-                          SPECCODE = tmp_CA$SPECCODE
-                        ),
-                        length
+                               by = list(
+                                 STNO = tmp_CA$STNO,
+                                 SPECCODE = tmp_CA$SPECCODE
+                               ),
+                               length
         )
         CAspMAX <- CAsp[which.max(CAsp$x),]
         # tmp_CA <- 
@@ -203,20 +206,33 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
       
       colnames(tmp_HH)[colnames(tmp_HH)=="GEAREXP"] <- "GEAREX"
       colnames(tmp_HL)[colnames(tmp_HL)=="GEAREXP"] <- "GEAREX"
-      if(csv){
-        theFile <- file.create(fullnm)
-        suppressWarnings(utils::write.table(x = tmp_HH, file = fullnm, row.names = F, col.names = F, quote = FALSE, sep = ","))
-        suppressWarnings(utils::write.table(x = tmp_HL, file = fullnm, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
-        suppressWarnings(utils::write.table(x = tmp_CA, file = fullnm, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
-        if (debug){
-          utils::write.csv(x = tmp_HH, file = paste0(fullnm,"_HH_debug.csv"), row.names = F)
-          utils::write.csv(x = tmp_HL, file = paste0(fullnm,"_HL_debug.csv"), row.names = F) 
-          utils::write.csv(x = tmp_CA, file = paste0(fullnm,"_CA_debug.csv"), row.names = F)
+      
+      
+      SHIPS <- unique(tmp_HH$SHIP)
+      for (s in 1:length(SHIPS)){
+        nmShip = paste0(nm,"_",SHIPS[s])
+        fullnmShip <- gsub(".csv", paste0("_",SHIPS[s],".csv"), fullnm)
+        this_tmp_HH <- tmp_HH[tmp_HH$SHIP == SHIPS[s],]
+        this_tmp_HL <- tmp_HL[tmp_HL$SHIP == SHIPS[s],]
+        this_tmp_CA <- tmp_CA[tmp_CA$SHIP == SHIPS[s],]
+        
+        if(csv){
+          theFile <- file.create(fullnmShip)
+          suppressWarnings(utils::write.table(x = this_tmp_HH, file = fullnmShip, row.names = F, col.names = F, quote = FALSE, sep = ","))
+          suppressWarnings(utils::write.table(x = this_tmp_HL, file = fullnmShip, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
+          suppressWarnings(utils::write.table(x = this_tmp_CA, file = fullnmShip, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
+          if (debug){
+            utils::write.csv(x = this_tmp_HH, file = paste0(gsub(pattern = ".csv", replacement = "", x = fullnmShip),"_HH_debug.csv"), row.names = F)
+            utils::write.csv(x = this_tmp_HL, file = paste0(gsub(pattern = ".csv", replacement = "", x = fullnmShip),"_HL_debug.csv"), row.names = F) 
+            utils::write.csv(x = this_tmp_CA, file = paste0(gsub(pattern = ".csv", replacement = "", x = fullnmShip),"_CA_debug.csv"), row.names = F)
+          }
+          cat("\n",paste0("File written to", getwd(),"/", fullnmShip))
         }
-        cat("\n",paste0("File written to", getwd(),"/", fullnm))
+        thisyrShp <- list(HH = this_tmp_HH, HL = this_tmp_HL, CA = this_tmp_CA)
+        results[[nmShip]]<-thisyrShp
       }
-      thisyr <- list(HH = tmp_HH, HL = tmp_HL, CA = tmp_CA)
-      results[[nm]]<-thisyr
+      
+
       tmp_env<-NULL
     }
   }

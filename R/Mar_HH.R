@@ -4,17 +4,20 @@
 #' metadata 
 #' @param scratch_env default is \code{NULL} This is an environment containing the results of a
 #' Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH, HL and CA
+#' @param survey default is \code{NULL}. This specifies the survey(s) for which you'd like to generate
+#' HH files. 
+#' Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH, HL and CA
 #' @return a df generated HH file
 #' @family DATRAS
 #' @author Mike McMahon, \email{Mike.McMahon@@dfo-mpo.gc.ca}
 #'  @export
-Mar_HH <- function(scratch_env = NULL){
+Mar_HH <- function(scratch_env = NULL, survey = NULL){
   cat("\n","Generating HH...")
 
-  
-  df= merge(scratch_env$GSINF, scratch_env$GSMISSIONS, all.x = T)
-  df = merge(df, scratch_env$GSWARPOUT, all.x=T)
+  df= merge(scratch_env$GSINF, scratch_env$GSMISSIONS, all.x = T, by = c("MISSION"))
+  df = merge(df, unique(scratch_env$GSWARPOUT), all.x=T, by = c("MISSION","SETNO"))
   df = df[with(df,order(SDATE)),]
+
   df$haulno <- seq(1:nrow(df))
   #' drop unneeded fields, and make original cols lowercase - finals will be uppercase
   df = df[,c("MISSION","BOTTOM_SALINITY","BOTTOM_TEMPERATURE","SDATE",
@@ -36,7 +39,11 @@ Mar_HH <- function(scratch_env = NULL){
       df$DATETIME <- lubridate::make_datetime(year = df$YEAR, month = df$MONTH, day = df$DAY, hour =df$HOUR, min = df$MIN, sec=0, tz = "Canada/Atlantic")
       #line below added iin response to encountering case where reported time happened EXACTLT at start of daylight savings time
       df[is.na(df$DATETIME),"DATETIME"] <- lubridate::make_datetime(year = df[is.na(df$DATETIME),"YEAR"], month = df[is.na(df$DATETIME),"MONTH"], day = df[is.na(df$DATETIME),"DAY"], hour =df[is.na(df$DATETIME),"HOUR"]+1, min = df[is.na(df$DATETIME),"MIN"], sec=0, tz = "Canada/Atlantic")
-      df$QUARTER<-lubridate::quarter(df$DATETIME)
+#necessary to "force" quarter such that each survey is self-consistent and can be downloaded together
+      df$QUARTER<- ifelse(survey == "SUMMER", 3,
+                          ifelse(survey %in% c("SPRING", "GEORGES", "4X"), 1,
+                                ifelse(survey = "FALL", 4, -999)))
+
       df$TIMESHOT<-sprintf('%04d',df$time)
       df$sdate <- NULL
       df$time <- NULL

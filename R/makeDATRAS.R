@@ -15,9 +15,12 @@
 #' @param survey default is \code{NULL}. This specifies the survey for which you'd like to generate
 #' HH files.  This will be specific to the different regions.  Valid values for Maritimes are
 #' \itemize{
-#' \item \code{"4VSW"}    Types 1 & 3; Jan - April (inclusive); Strata 396:411
-#' \item \code{"SUMMER"}  Types 1 & 3; May - August (inclusive)
-#' \item \code{"GEORGES"} Types 1 & 3; Jan - April (inclusive); != Strata 396:411
+#' \item \code{4X} - Type 1; Spring (i.e. months 1:4); 2008+; not strata 5Z* 
+#' \item \code{GEORGES} - Type 1; Spring (i.e. months 1:4);  2008+; strata 5Z*
+#' \item \code{SPRING} - Type 1; Spring (i.e. months 1:4); pre-2008; specific strata 
+#' \item \code{4VSW}  - Type 1; Spring (i.e. months 1:4); 4VSW strata;  
+#' \item \code{SUMMER} - Type 1; Summer (i.e. months 5:8); specific strata
+#' \item \code{FALL} - Type 1; Fall (i.e. months 9:12)
 #' }
 #' @param csv default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.
 #' If \code{FALSE}, the output exists only in the resultant list.
