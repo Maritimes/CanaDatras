@@ -81,6 +81,13 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
               "AGEPREPMET","OTGRADING","PARSAMP") #"GEAREXP",
   cat("\n", "Extracting Data")
   if (!exists("ds_all")) ds_all <<- Mar.datawrangling::load_datasources()
+  Mar.datawrangling::get_data('rv', 
+                      fn.oracle.username = fn.oracle.username,
+                      fn.oracle.password = fn.oracle.password,
+                      fn.oracle.dsn = fn.oracle.dsn,
+                      data.dir = data.dir,
+                      usepkg = usepkg,
+                      env = scratch_env, quiet = T)
   Mar.datawrangling::get_data_custom(schema="GROUNDFISH",
                                      fn.oracle.username = fn.oracle.username,
                                      fn.oracle.password = fn.oracle.password,
@@ -96,6 +103,7 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
                    fn.oracle.dsn = fn.oracle.dsn,
                    data.dir = data.dir,
                    usepkg = usepkg){
+
     Mar.datawrangling::get_survey('rv', data.dir = data.dir, env = scratch_env, quiet = T, survey = survey, keepBadSets = T)
     scratch_env$GSMISSIONS = scratch_env$GSMISSIONS[scratch_env$GSMISSIONS$YEAR == yr,]
     Mar.datawrangling::self_filter(keep_nullsets = T, env = scratch_env, quiet = F)
