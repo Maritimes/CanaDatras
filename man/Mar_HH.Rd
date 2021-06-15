@@ -4,10 +4,14 @@
 \alias{Mar_HH}
 \title{Mar_HH}
 \usage{
-Mar_HH(scratch_env = NULL)
+Mar_HH(scratch_env = NULL, survey = NULL)
 }
 \arguments{
 \item{scratch_env}{default is \code{NULL} This is an environment containing the results of a
+Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH, HL and CA}
+
+\item{survey}{default is \code{NULL}. This specifies the survey(s) for which you'd like to generate
+HH files. 
 Mar.datawrangling extraction - i.e. it contains all of the data necessary for HH, HL and CA}
 }
 \value{
