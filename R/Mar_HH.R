@@ -40,9 +40,9 @@ Mar_HH <- function(scratch_env = NULL, survey = NULL){
       #line below added iin response to encountering case where reported time happened EXACTLT at start of daylight savings time
       df[is.na(df$DATETIME),"DATETIME"] <- lubridate::make_datetime(year = df[is.na(df$DATETIME),"YEAR"], month = df[is.na(df$DATETIME),"MONTH"], day = df[is.na(df$DATETIME),"DAY"], hour =df[is.na(df$DATETIME),"HOUR"]+1, min = df[is.na(df$DATETIME),"MIN"], sec=0, tz = "Canada/Atlantic")
 #necessary to "force" quarter such that each survey is self-consistent and can be downloaded together
-      df$QUARTER<- ifelse(survey == "SUMMER", 3,
+          df$QUARTER<- ifelse(survey == "SUMMER", 3,
                           ifelse(survey %in% c("SPRING", "GEORGES", "4X"), 1,
-                                ifelse(survey = "FALL", 4, -999)))
+                                ifelse(survey == "FALL", 4, -999)))
 
       df$TIMESHOT<-sprintf('%04d',df$time)
       df$sdate <- NULL
