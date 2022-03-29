@@ -185,7 +185,7 @@ Mar_HH <- function(scratch_env = NULL, survey = NULL){
       df[df$SHIP == "HAM","SHIP"]<-"18LH"
       df[df$SHIP == "TEL","SHIP"]<-"18TL"
       df[df$SHIP == "VEN","SHIP"]<-"188O"
-      df[df$SHIP == "CARTIER","SHIP"]<- "NEWID1"
+      df[df$SHIP == "CAR","SHIP"]<- "18QL"
       df[df$SHIP == "PRINCE","SHIP"]<- "NEWID2"
       return(df)
     }
