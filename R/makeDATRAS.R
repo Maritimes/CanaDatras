@@ -24,25 +24,10 @@
 #' }
 #' @param csv default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.
 #' If \code{FALSE}, the output exists only in the resultant list.
-#' @param fn.oracle.username default is \code{'_none_'} Required for Maritimes HH files. This is
-#' your username for accessing oracle objects. If you have a value for \code{oracle.username}
-#' stored in your environment (e.g. from an rprofile file), this can be left out
-#' and that value will be used.  If a value for this is provided, it will take
-#' priority over your existing value.
-#' @param fn.oracle.password default is \code{'_none_'} Required for Maritimes HH files. This is
-#' your password for accessing oracle objects. If you have a value for \code{oracle.password}
-#' stored in your environment (e.g. from an rprofile file), this can be left out
-#' and that value will be used.  If a value for this is provided, it will take
-#' priority over your existing value.
-#' @param fn.oracle.dsn default is \code{'_none_'} Required for Maritimes HH files. This is your
-#' dsn/ODBC identifier for accessing oracle objects. If you have a value for
-#' \code{oracle.dsn} stored in your environment (e.g. from an rprofile file),
-#' this can be left and that value will be used.  If a value for this is
-#' provided, it will take priority over your existing value.
-#' @param usepkg default is \code{'rodbc'}. Required for Maritimes HH files. This indicates whether
-#' the connection to Oracle should use \code{'rodbc'} or \code{'roracle'} to connect.  rodbc is
-#' slightly easier to setup, but
-#' roracle will extract data ~ 5x faster.
+#' @param cxn A valid Oracle connection object. This parameter allows you to 
+#' pass an existing connection, reducing the need to establish a new connection 
+#' within the function. If provided, it takes precedence over the connection-
+#' related parameters.
 #' @param data.dir  The default is \code{NULL}. Required for Maritimes HH files. This is the path
 #' to your Mar.datawrangling rdata files
 #' @param debug  The default is \code{F}. Setting this to TRUE will limit the 
@@ -53,10 +38,7 @@
 #' @export
 #'
 makeDATRAS<-function(region = NULL, yr=NULL, survey = NULL, csv=T,
-                 fn.oracle.username = "_none_",
-                 fn.oracle.password = "_none_",
-                 fn.oracle.dsn = "_none_",
-                 usepkg = "rodbc",
+                 cxn = NULL,
                  data.dir = NULL,
                  debug =F){
 region <- toupper(region)
@@ -67,9 +49,7 @@ if (!region %in% good)stop("Please provide a valid region")
 switch(region,
        "NFLD" = NFLD_DATRAS(yr=yr, survey=survey,  csv=csv, debug = debug),
        "MAR" = Mar_DATRAS(yr=yr, survey=survey,  csv=csv,
-                            fn.oracle.username = fn.oracle.username,
-                            fn.oracle.password = fn.oracle.password,
-                            fn.oracle.dsn = fn.oracle.dsn,
+                            cxn = cxn,
                             data.dir = data.dir,
                             usepkg = usepkg,
                             debug = debug),

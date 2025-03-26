@@ -15,24 +15,10 @@
 #' }
 #' @param csv default is \code{TRUE}.  If \code{TRUE}, csv files are generated for each HH code.  If
 #' \code{FALSE}, the output exists only in the resultant list.
-#' @param fn.oracle.username default is \code{'_none_'} This is your username for
-#' accessing oracle objects. If you have a value for \code{oracle.username}
-#' stored in your environment (e.g. from an rprofile file), this can be left out
-#' and that value will be used.  If a value for this is provided, it will take
-#' priority over your existing value.
-#' @param fn.oracle.password default is \code{'_none_'} This is your password for
-#' accessing oracle objects. If you have a value for \code{oracle.password}
-#' stored in your environment (e.g. from an rprofile file), this can be left out
-#' and that value will be used.  If a value for this is provided, it will take
-#' priority over your existing value.
-#' @param fn.oracle.dsn default is \code{'_none_'} This is your dsn/ODBC
-#' identifier for accessing oracle objects. If you have a value for
-#' \code{oracle.dsn} stored in your environment (e.g. from an rprofile file),
-#' this can be left and that value will be used.  If a value for this is
-#' provided, it will take priority over your existing value.
-#' @param usepkg default is \code{'rodbc'}. This indicates whether the connection to Oracle should
-#' use \code{'rodbc'} or \code{'roracle'} to connect.  rodbc is slightly easier to setup, but
-#' roracle will extract data ~ 5x faster.
+#' @param cxn A valid Oracle connection object. This parameter allows you to 
+#' pass an existing connection, reducing the need to establish a new connection 
+#' within the function. If provided, it takes precedence over the connection-
+#' related parameters.
 #' @param data.dir  The default is \code{NULL}. This is the path to your Mar.datawrangling
 #' rdata files
 #' @param debug  The default is \code{F}. Setting this to TRUE will limit the 
@@ -44,10 +30,7 @@
 #' @export
 #'
 Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
-                       fn.oracle.username = "_none_",
-                       fn.oracle.password = "_none_",
-                       fn.oracle.dsn = "_none_",
-                       usepkg = "rodbc",
+                       cxn = NULL,
                        data.dir = NULL,
                        debug = debug){
   
@@ -82,29 +65,20 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
   cat("\n", "Extracting Data")
   if (!exists("ds_all")) ds_all <<- Mar.datawrangling::load_datasources()
   Mar.datawrangling::get_data('rv', 
-                      fn.oracle.username = fn.oracle.username,
-                      fn.oracle.password = fn.oracle.password,
-                      fn.oracle.dsn = fn.oracle.dsn,
+                      cxn = cxn,
                       data.dir = data.dir,
-                      usepkg = usepkg,
                       env = scratch_env, quiet = T)
   Mar.datawrangling::get_data_custom(schema="GROUNDFISH",
-                                     fn.oracle.username = fn.oracle.username,
-                                     fn.oracle.password = fn.oracle.password,
-                                     fn.oracle.dsn = fn.oracle.dsn,
+                                     cxn = cxn,
                                      data.dir = data.dir,
-                                     usepkg = usepkg,
                                      tables = c("GSWARPOUT","GSSPECIES_CODES","GS_LV1_OBSERVATIONS"),
                                      env = scratch_env, quiet = T)
   
   getRaw<-function(yr=NULL, survey=NULL,
-                   fn.oracle.username = fn.oracle.username,
-                   fn.oracle.password = fn.oracle.password,
-                   fn.oracle.dsn = fn.oracle.dsn,
-                   data.dir = data.dir,
-                   usepkg = usepkg){
+                   cxn = cxn,
+                   data.dir = data.dir){
 
-    Mar.datawrangling::get_survey('rv', data.dir = data.dir, env = scratch_env, quiet = T, survey = survey, keepBadSets = T)
+    Mar.datawrangling::get_survey('rv', cxn = cxn, data.dir = data.dir, env = scratch_env, quiet = T, survey = survey, keepBadSets = T)
     scratch_env$GSMISSIONS = scratch_env$GSMISSIONS[scratch_env$GSMISSIONS$YEAR == yr,]
     Mar.datawrangling::self_filter(keep_nullsets = T, env = scratch_env, quiet = F)
     
@@ -135,11 +109,8 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
       nm = paste0(survey[s],"_",yr[y])
       fullnm <- paste0(nm,"_",timestamp,".csv")
       tmp_env <- getRaw(yr=yr[y], survey = survey[s],
-                        fn.oracle.username = fn.oracle.username,
-                        fn.oracle.password = fn.oracle.password,
-                        fn.oracle.dsn = fn.oracle.dsn,
-                        data.dir = data.dir,
-                        usepkg = usepkg)
+                        cxn = cxn,
+                        data.dir = data.dir)
       
       #convert gscat values to grams (gsdet already in g)
       if (nrow(tmp_env$GSINF)==0){
@@ -211,30 +182,40 @@ Mar_DATRAS <- function(yr=NULL, survey=NULL, csv =T,
         tmp_HL <- tmp_HL[tmp_HL$STNO == CAspMAX$STNO & tmp_HL$SPECCODE == CAspMAX$SPECCODE, ]
         tmp_HH <- tmp_HH[tmp_HH$STNO == CAspMAX$STNO, ]
       }
+      names(tmp_HH) <- c("RecordType", "Quarter", "Country", "Ship", "Gear", "SweepLngt",  "GearEx", "DoorType", "StNo", "HaulNo", 
+                         "Year", "Month", "Day", "TimeShot", "DepthStratum", "HaulDur", "DayNight", "ShootLat", "ShootLong", "HaulLat", 
+                         "HaulLong", "StatRec", "Depth", "HaulVal", "HydroStNo", "StdSpecRecCode", "BySpecRecCode", "DataType", "Netopening", "Rigging", 
+                         "Tickler", "Distance", "Warplngt", "Warpdia", "WarpDen", "DoorSurface", "DoorWgt", "DoorSpread", "WingSpread", "Buoyancy", 
+                         "KiteDim", "WgtGroundRope", "TowDir", "GroundSpeed", "SpeedWater", "SurCurDir", "SurCurSpeed", "BotCurDir", "BotCurSpeed", "WindDir", 
+                         "WindSpeed", "SwellDir", "SwellHeight", "SurTemp", "BotTemp", "SurSal", "BotSal", "ThermoCline", "ThClineDepth", "CodendMesh", 
+                         "SecchiDepth", "Turbidity", "TidePhase", "TideSpeed", "PelSampType", "MinTrawlDepth", "MaxTrawlDepth")
       
-      colnames(tmp_HH)[colnames(tmp_HH)=="GEAREXP"] <- "GEAREX"
-      colnames(tmp_HL)[colnames(tmp_HL)=="GEAREXP"] <- "GEAREX"
+      names(tmp_HL) <- c("RecordType", "Quarter", "Country", "Ship", "Gear", "SweepLngt", "GearEx", "DoorType", "StNo", "HaulNo", "Year", "SpecCodeType", "SpecCode", "SpecVal", "Sex", "TotalNo", "CatIdentifier", "NoMeas", "SubFactor", "SubWgt", "CatCatchWgt", "LngtCode", "LngtClass", "HLNoAtLngt", "DevStage", "LenMeasType")
+      names(tmp_CA) <- c("RecordType", "Quarter", "Country", "Ship", "Gear", "SweepLngt", "GearEx", "DoorType", "StNo", "HaulNo", "Year", "SpecCodeType", "SpecCode", "AreaType", "AreaCode", "LngtCode", "LngtClass", "Sex", "Maturity", "PlusGr", "AgeRings", "CANoAtLngt", "MaturityScale", "FishID", "GenSamp", "StomSamp", "AgeSource", "AgePrepMet", "OtGrading", "ParSamp", "LiverWeight")
+      
+      # colnames(tmp_HH)[colnames(tmp_HH)=="GEAREXP"] <- "GEAREX"
+      # colnames(tmp_HL)[colnames(tmp_HL)=="GEAREXP"] <- "GEAREX"
       
       
-      SHIPS <- unique(tmp_HH$SHIP)
+      SHIPS <- unique(tmp_HH$Ship)
       for (s in 1:length(SHIPS)){
         nmShip = paste0(nm,"_",SHIPS[s])
         fullnmShip <- gsub(".csv", paste0("_",SHIPS[s],".csv"), fullnm)
-        this_tmp_HH <- tmp_HH[tmp_HH$SHIP == SHIPS[s],]
-        this_tmp_HL <- tmp_HL[tmp_HL$SHIP == SHIPS[s],]
-        this_tmp_CA <- tmp_CA[tmp_CA$SHIP == SHIPS[s],]
+        this_tmp_HH <- tmp_HH[tmp_HH$Ship == SHIPS[s],]
+        this_tmp_HL <- tmp_HL[tmp_HL$Ship == SHIPS[s],]
+        this_tmp_CA <- tmp_CA[tmp_CA$Ship == SHIPS[s],]
         
         if(csv){
           theFile <- file.create(fullnmShip)
-          suppressWarnings(utils::write.table(x = this_tmp_HH, file = fullnmShip, row.names = F, col.names = F, quote = FALSE, sep = ","))
-          suppressWarnings(utils::write.table(x = this_tmp_HL, file = fullnmShip, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
-          suppressWarnings(utils::write.table(x = this_tmp_CA, file = fullnmShip, row.names = F, col.names = F, quote = FALSE, sep = ",", append = T))
+          suppressWarnings(utils::write.table(x = this_tmp_HH, file = fullnmShip, row.names = F, col.names = T, quote = FALSE, sep = ","))
+          suppressWarnings(utils::write.table(x = this_tmp_HL, file = fullnmShip, row.names = F, col.names = T, quote = FALSE, sep = ",", append = T))
+          suppressWarnings(utils::write.table(x = this_tmp_CA, file = fullnmShip, row.names = F, col.names = T, quote = FALSE, sep = ",", append = T))
           if (debug){
             utils::write.csv(x = this_tmp_HH, file = paste0(gsub(pattern = ".csv", replacement = "", x = fullnmShip),"_HH_debug.csv"), row.names = F)
             utils::write.csv(x = this_tmp_HL, file = paste0(gsub(pattern = ".csv", replacement = "", x = fullnmShip),"_HL_debug.csv"), row.names = F) 
             utils::write.csv(x = this_tmp_CA, file = paste0(gsub(pattern = ".csv", replacement = "", x = fullnmShip),"_CA_debug.csv"), row.names = F)
           }
-          cat("\n",paste0("File written to", getwd(),"/", fullnmShip))
+          cat("\n",paste0("File written to ", getwd(),"/", fullnmShip))
         }
         thisyrShp <- list(HH = this_tmp_HH, HL = this_tmp_HL, CA = this_tmp_CA)
         results[[nmShip]]<-thisyrShp
