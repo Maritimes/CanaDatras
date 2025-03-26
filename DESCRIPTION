@@ -1,11 +1,13 @@
 Package: CanaDatras
 Type: Package
 Title: Facilitates converting Canadian Trawl Survey Data into DATRAS format
-Version: 2021.06.15
+Version: 2025.03.26
 Authors@R: c(
     person("Mike", "McMahon", email = "Mike.McMahon@dfo-mpo.gc.ca", role = "cre"))
 Maintainer: Mike McMahon <mike.mcmahon@dfo-mpo.gc.ca>
 Description: This package converts Canadian Trawl Survey data into ICES DATRAS form (i.e. HH, HL and CA files).
+Depends:
+    R (>= 4.1.0)
 Imports: 
   lubridate,
   geosphere, 
@@ -19,4 +21,4 @@ Remotes:
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
